@@ -13,3 +13,7 @@ $routes->match(['get', 'post'],'/monObject/add', 'IndependentTables::addMonObjec
 $routes->match(['get'],'/monObjects', 'IndependentTables::getMonObjects');
 $routes->match(['get', 'post'],'/criticality/add', 'IndependentTables::addCriticality');
 $routes->match(['get'],'/criticality', 'IndependentTables::getСriticality');
+$routes->match(['get', 'post'],'/reason/add', 'IndependentTables::addReason');
+$routes->match(['get'],'/reasons', 'IndependentTables::getReasons');
+$routes->match(['get', 'post'],'/dispatcherStatus/add', 'IndependentTables::addDispatcherStatus');
+$routes->match(['get'],'/dispatcherStatuses', 'IndependentTables::getDispatcherStatuses');

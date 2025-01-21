@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Models\MonObject;
 use App\Models\User;
 use App\Models\Сriticality;
+use App\Models\Reasons;
+use App\Models\DispatcherStatuses;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class IndependentTables extends BaseController
@@ -14,7 +16,8 @@ class IndependentTables extends BaseController
     return 'LoadingData';
   }
 
-  private function get($rows, $title): string {
+  private function get($rows, $title, $label = ''): string {
+    if (!$label) $label = $title;
     $columns = [];
     foreach ($rows as $row) {
       foreach ($row as $column => $val) {
@@ -24,7 +27,7 @@ class IndependentTables extends BaseController
     }
 
     $html = view('html_elements/header', ['title' => $title]);
-    $html .= view('users/all', ['rows' => $rows, 'columns' => $columns]);
+    $html .= view('pages/show_table', ['rows' => $rows, 'columns' => $columns, 'label' => $label]);
     $html .= view('html_elements/footer_data_table');
     return $html;
   }
@@ -151,5 +154,52 @@ class IndependentTables extends BaseController
     $model = new Сriticality();
     $rows = $model->findAll();
     return $this->get($rows, 'Справочник критичности событий');
+  }
+
+  public function addReason() {
+    // criticality
+    $data = [
+      'name' => $this->request->getPost('name'),
+      'is_mileage' => (bool)($this->request->getPost('is_mileage') === 'on'),
+      'is_fuel_level' => (bool)($this->request->getPost('is_fuel_level') === 'on'),
+      'is_moto' => (bool)($this->request->getPost('is_moto') === 'on'),
+      'is_can' => (bool)($this->request->getPost('is_can') === 'on'),
+    ];
+
+    $description = [
+      'name' => ['label' => 'Наименование', 'required' => 'required'],
+      'is_mileage' => ['label' => 'Влияет на пробег', 'required' => '', 'type' => 'checkbox'],
+      'is_fuel_level' => ['label' => 'Влияет на расход топлива', 'required' => '', 'type' => 'checkbox'],
+      'is_moto' => ['label' => 'Влияет на время работы ДВС', 'required' => '', 'type' => 'checkbox'],
+      'is_can' => ['label' => 'Влияет на can данные', 'required' => '', 'type' => 'checkbox'],
+    ];
+
+    $heading = 'Добавление причины неисправности в справочник';
+    $model = new Reasons();
+    return $this->add($model, $data, 'name', $description, $heading);
+  }
+  public function getReasons() {
+    $model = new Reasons();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Справочник причин неисправности');
+  }
+  public function addDispatcherStatus() {
+    // criticality
+    $data = [
+      'status' => $this->request->getPost('status'),
+    ];
+
+    $description = [
+      'status' => ['label' => 'Статус', 'required' => 'required'],
+    ];
+
+    $heading = 'Добавление статуса неисправности от диспетчера в справочник';
+    $model = new DispatcherStatuses();
+    return $this->add($model, $data, 'status', $description, $heading);
+  }
+  public function getDispatcherStatuses() {
+    $model = new DispatcherStatuses();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Справочник статусов неисправностей от диспетчера');
   }
 }
