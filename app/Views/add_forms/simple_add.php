@@ -5,12 +5,22 @@
 <form method="POST">
   <?php foreach($data as $column => $val): ?>
   <div class="input-group px-2 mb-2">
-    <span class="input-group-text"><?=$description[$column]['label']?></span>
-    <input type="text" class="form-control" name="<?=$column?>" value="<?=esc($val)?>" <?=$description[$column]['required']?>>
+    <?php if(($description[$column]['type'] ?? 'text') === 'checkbox'):?>
+      <label for="id-<?=$column?>"><span class="input-group-text"><?=$description[$column]['label']?></span></label>
+      <div class="input-group-text">
+        <input type="checkbox" <?=$val ? 'checked' : ''?> id="id-<?=$column?>" name="<?=$column?>" class="form-check-input mt-0">
+      </div>
+    <?php else: ?>
+      <span class="input-group-text"><?=$description[$column]['label']?></span>
+      <input type="<?=$description[$column]['type'] ?? 'text'?>" class="form-control" name="<?=$column?>" value="<?=esc($val)?>" <?=$description[$column]['required']?>>
+    <?php endif; ?>
+  </div>
+
+  <div class="input-group px-2 mb-2">
+    
   </div>
   <?php endforeach; ?>
   <div class="d-flex justify-content-center">
-    <!-- <button class="btn btn-default">Centered button</button> -->
     <button type="submit" class="btn btn-primary my-auto">Записать</button>
   </div>
 </form>

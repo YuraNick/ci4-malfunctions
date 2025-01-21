@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\MonObject;
 use App\Models\User;
+use App\Models\Сriticality;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class IndependentTables extends BaseController
@@ -28,11 +29,11 @@ class IndependentTables extends BaseController
     return $html;
   }
 
-  private function add(\CodeIgniter\Model $model, array $data, array $description, string $heading) {
+  private function add(\CodeIgniter\Model $model, array $data, string $requiredColumn, array $description, string $heading) {
     $added = 0;
     $error = '';
 
-    if ($data['state_number']) {
+    if ($data[$requiredColumn]) {
       try {
         $added = $model->insert($data);
       } catch (DatabaseException $e) {
@@ -73,7 +74,7 @@ class IndependentTables extends BaseController
 
     $heading = 'Добавление объекта мониторинга (автомобиля)';
     $model = new MonObject();
-    return $this->add($model, $data, $description, $heading);
+    return $this->add($model, $data, 'state_number', $description, $heading);
   }
 
   public function getUsers(): string {
@@ -127,5 +128,28 @@ class IndependentTables extends BaseController
     }
     $html .= view('html_elements/footer');
     return $html;
-  } 
+  }
+
+  public function addCriticality(): string {
+    // criticality
+    $data = [
+      'name' => $this->request->getPost('name'),
+      'is_notification' => (bool)($this->request->getPost('is_notification') === 'on'),
+    ];
+
+    $description = [
+      'name' => ['label' => 'Наименование', 'required' => 'required'],
+      'is_notification' => ['label' => 'Отправить уведомление', 'required' => '', 'type' => 'checkbox'],
+    ];
+
+    $heading = 'Добавление критичности события в справочник';
+    $model = new Сriticality();
+    return $this->add($model, $data, 'name', $description, $heading);
+  }
+
+  public function getСriticality(): string {
+    $model = new Сriticality();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Справочник критичности событий');
+  }
 }
