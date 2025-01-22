@@ -10,6 +10,8 @@
     <li><a class="nav-item" href="/reasons">Посмотреть справочник причин неисправности</a></li>
     <li><a class="nav-item" href="/dispatcherStatus/add">Добавить статус неисправности от диспетчера в справочник</a></li>
     <li><a class="nav-item" href="/dispatcherStatuses">Посмотреть справочник статусов неисправностей от диспетчера</a></li>
+    <li><a class="nav-item" href="/malfunction/add">Добавить обнаруженную неисправность</a></li>
+    <li><a class="nav-item" href="/malfunctions">Посмотреть обнаруженные неисправности</a></li>
     <li><hr class="nav-item"></li>
     <li><a class="nav-item" href="#">Separated link</a></li>
   </ul>
