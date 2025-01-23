@@ -116,8 +116,16 @@ class DependentTables extends BaseController
 
   public function getMalfunctions() {
     $model = new Malfunctions();
-    $rows = $model->findAll();
+    $rows = $model->join('malfunction.obj_mon', 'malfunction.obj_mon.id = malfunction.malfunctions.id_obj')->findAll();
     return $this->get($rows, 'Выявленные неисправности');
+    // select(    
+    //   'id_obj',
+    // 'id_reason', 
+    // 'id_criticality', 
+    // 'begin',
+    // 'end',
+    // 'reliability',
+    // 'percent')
   }
 
   private function getObjects() {
