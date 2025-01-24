@@ -12,6 +12,8 @@
     <li><a class="nav-item" href="/dispatcherStatuses">Посмотреть справочник статусов неисправностей от диспетчера</a></li>
     <li><a class="nav-item" href="/malfunction/add">Добавить обнаруженную неисправность</a></li>
     <li><a class="nav-item" href="/malfunctions">Посмотреть обнаруженные неисправности</a></li>
+    <li><a class="nav-item" href="/notification/add">Добавить уведомление о неисправности</a></li>
+    <li><a class="nav-item" href="/notifications/add">Посмотреть уведомления о неисправностях</a></li>
     <li><hr class="nav-item"></li>
-    <li><a class="nav-item" href="#">Separated link</a></li>
+    <li><a class="nav-item" href="/template/malfunctions">Отчет по неисправностям</a></li>
   </ul>

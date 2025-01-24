@@ -19,3 +19,8 @@ $routes->match(['get', 'post'],'/dispatcherStatus/add', 'IndependentTables::addD
 $routes->match(['get'],'/dispatcherStatuses', 'IndependentTables::getDispatcherStatuses');
 $routes->match(['get', 'post'],'/malfunction/add', 'DependentTables::malfunctionsAdd');
 $routes->match(['get'],'/malfunctions', 'DependentTables::getMalfunctions');
+$routes->match(['get', 'post'],'/notification/add', 'DependentTables::notificationsAdd');
+$routes->match(['get'],'/notifications', 'DependentTables::getNotifications');
+
+
+$routes->match(['get'],'/template/malfunctions', 'TemplateTables::getMalfunctions');

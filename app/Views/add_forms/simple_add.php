@@ -43,10 +43,14 @@
         <input type="text" id="client-timezone-name" name="timezone_name" class="d-none"/>
       <?php endif; ?>
 
+    <?php elseif('textarea' === ($description[$column]['type'] ?? 'text')): ?>
+      <span class="input-group-text"><?=$description[$column]['label']?></span>
+      <textarea class="form-control" name="<?=$column?>" <?=$description[$column]['required']?>><?=esc($val)?></textarea>
+    
     <?php elseif('text' === ($description[$column]['type'] ?? 'text')): ?>
       <span class="input-group-text"><?=$description[$column]['label']?></span>
       <input type="<?=$description[$column]['type'] ?? 'text'?>" class="form-control" name="<?=$column?>" value="<?=esc($val)?>" <?=$description[$column]['required']?>>
-    
+
     <?php endif; ?>
   </div>
   <?php endforeach; ?>
