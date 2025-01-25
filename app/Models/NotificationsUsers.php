@@ -10,8 +10,8 @@ class NotificationsUsers extends Model
 
   protected $allowedFields = [
     'notifications_id',
-    'id_user', 
-    'is_sended', 
+    'id_user',
+    'is_sended',
   ];
 
 }

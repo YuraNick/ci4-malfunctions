@@ -8,6 +8,7 @@ use App\Models\Reasons;
 use App\Models\Сriticality;
 use App\Models\Malfunctions;
 use App\Models\Notifications;
+use App\Models\NotificationsUsers;
 use App\Models\DispatcherStatuses;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
@@ -29,7 +30,9 @@ class ExampleFill extends BaseController
     $malfunctionsCount = $this->fillMalfunctions();
     $info[] = "Добавлено неисправностей по объектам мониторинга (автомобилям) в таблицу malfunctions: $malfunctionsCount";
     $notificationsCount = $this->fillNotifications();
-    $info[] = "Добавлено уведомлений о неисправностях в таблицу notifications: $notificationsCount";
+    $info[] = "Добавлено подготовленных уведомлений о неисправностях в таблицу notifications: $notificationsCount";
+    $notificationsUsersCount = $this->fillNotificationsUsers();
+    $info[] = "Добавлено уведомлений пользователям о неисправностях в таблицу notifications_users: $notificationsUsersCount";
     
     return implode('<br>', $info);
   }
@@ -72,7 +75,13 @@ class ExampleFill extends BaseController
 
   public function fillNotifications(): string {
     $model = new Notifications();
-    $data = $this->getFillNotificationsDataExample();
+    $data = $this->getNotificationsDataExample();
+    return $this->insertData($model, $data);
+  }
+
+  public function fillNotificationsUsers(): string {
+    $model = new Notifications();
+    $data = $this->getNotificationsUsersDataExample();
     return $this->insertData($model, $data);
   }
 
@@ -93,23 +102,17 @@ class ExampleFill extends BaseController
     $monObject = new MonObject();
     $monObjectIds = $monObject->select('id')->findAll();
     $monObject = null;
-    foreach($monObjectIds as $key => $val) {
-      $monObjectIds[$key] = (int)$val['id'];
-    }
-
+    $monObjectIds = $this->leaveOnlyIds($monObjectIds);
+    
     $reasons = new Reasons();
     $reasonIds = $reasons->select('id')->findAll();
     $reasons = null;
-    foreach($reasonIds as $key => $val) {
-      $reasonIds[$key] = (int)$val['id'];
-    }
+    $reasonIds = $this->leaveOnlyIds($reasonIds);
     
     $criticality = new Сriticality();
     $criticalityIds = $criticality->select('id')->findAll();
     $criticality = null;
-    foreach($criticalityIds as $key => $val) {
-      $criticalityIds[$key] = (int)$val['id'];
-    }
+    $criticalityIds = $this->leaveOnlyIds($criticalityIds);
 
     $ninetyDays = 7776000;
     $OneDay = 86400;
@@ -137,7 +140,14 @@ class ExampleFill extends BaseController
     return $malfunctionsExample;
   }
 
-  private function getFillNotificationsDataExample(): array {
+  private function leaveOnlyIds(array $arr) : array {
+    foreach($arr as $key => $val) {
+      $arr[$key] = (int)$val['id'];
+    }
+    return $arr;
+  }
+
+  private function getNotificationsDataExample(): array {
     $notificationsDataExample = [];
     // получить все уведомления со статусом отправить
     $model = new Malfunctions();
@@ -174,6 +184,34 @@ class ExampleFill extends BaseController
       ];
     }
     return $notificationsDataExample;
+  }
+
+  private function getNotificationsUsersDataExample(): array {
+    $notificationsUsersDataExample = [];
+    
+    $userModel = new User();
+    $usersIds = $userModel->select('id')->findAll();
+    $userModel = null;
+    $usersIds = $this->leaveOnlyIds($usersIds);
+    
+    $notificationsModel = new Notifications();
+    $notificationsIds = $notificationsModel->select('id')->findAll();
+    $notificationsModel = null;
+    $notificationsIds = $this->leaveOnlyIds($notificationsIds);
+
+    foreach($notificationsIds as $notifications_id) {
+      $usersCount = rand(1, 5);
+      for ($i = 0; $i < $usersCount; $i++) {
+        $userIndex = round(0, count($usersIds));
+        $notificationsUsersDataExample[] = [
+          'notifications_id' => $notifications_id,
+          'id_user' => $usersIds[$userIndex],
+          'is_sended' => (bool)(rand(0, 100) < 50),
+        ];
+      }
+    }
+    
+    return $notificationsUsersDataExample;
   }
 
   private function getUserDataExample(): array {
