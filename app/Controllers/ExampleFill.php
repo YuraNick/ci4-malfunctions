@@ -3,6 +3,11 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Models\MonObject;
+use App\Models\Reasons;
+use App\Models\Сriticality;
+use App\Models\Malfunctions;
+use App\Models\DispatcherStatuses;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class ExampleFill extends BaseController
@@ -12,19 +17,110 @@ class ExampleFill extends BaseController
     $info = [];
     $usersCount = $this->fillUsers();
     $info[] = "Добавлено пользователей в таблицу users: $usersCount";
+    $monObjectsCount = $this->fillMonObjects(100);
+    $info[] = "Добавлено объектов мониторинга (автомобилей) в таблицу obj_mon: $monObjectsCount";
+    $reasonsCount = $this->fillReasons();
+    $info[] = "Добавлено статусаов причин неисправностей в таблицу reasons: $reasonsCount";
+    $criticalityCount = $this->fillСriticality();
+    $info[] = "Добавлено статусов критичностей неисправностей в таблицу criticality: $criticalityCount";
+    $dispatcherStatusesCount = $this->fillDispatcherStatuses();
+    $info[] = "Добавлено критичностей в таблицу cdispatcher_statuses: $dispatcherStatusesCount";
+    $malfunctionsCount = $this->fillMalfunctions();
+    $info[] = "Добавлено неисправностей по объектам мониторинга (автомобилям) в таблицу malfunctions: $malfunctionsCount";
     
     return implode('<br>', $info);
   }
 
-  public function fillUsers() {
+  private function fillReasons(): string {
+    $model = new Reasons();
+    $data = $this->getReasonsExample();
+    return $this->insertData($model, $data);
+  }
+
+  private function fillСriticality(): string {
+    $model = new Сriticality();
+    $data = $this->getСriticalityExample();
+    return $this->insertData($model, $data);
+  }
+
+  private function fillDispatcherStatuses(): string {
+    $model = new Сriticality();
+    $data = $this->getDispatcherStatusesExample();
+    return $this->insertData($model, $data);
+  }
+
+  private function fillMalfunctions(): string {
+    $model = new Malfunctions();
+    $data = $this->getMalfunctionsExample();
+    return $this->insertData($model, $data);
+  }
+
+
+
+  public function fillUsers(): string {
     $model = new User();
     $data = $this->getUserDataExample();
-    $firstUser = $model->getWhere(['login' => $data[0]['login']])->getResultArray();
-    if (count($firstUser)) {
-      return 0;
+    return $this->insertData($model, $data);
+  }
+
+  public function fillMonObjects(int $count): string {
+    $model = new MonObject();
+    $data = $this->getMonObjectDataExample($count);
+    return $this->insertData($model, $data);
+  }
+
+  private function insertData(\CodeIgniter\Model $model, &$data) : string {
+    // $first = $model->getWhere($data[0])->getResultArray();
+    // $rowsCount = $model->getWhere($data[0])->num_rows();
+    $rowsCount = $model->limit(1)->get()->getResultArray();
+    if (count($rowsCount)) {
+      return '0 - табллица не пуста';
     }
     $model->insertBatch($data);
-    return count($data);
+    return (string)count($data);
+  }
+
+  private function getMalfunctionsExample(): array {
+    $malfunctionsExample = [];
+    $monObject = new MonObject();
+    $monObjectIds = $monObject->select('id')->findAll();
+    $monObject = null;
+    $reasons = new Reasons();
+    $reasonIds = $reasons->select('id')->findAll();
+    $reasons = null;
+    foreach($reasonIds as $key => $val) {
+      $reasonIds[$key] = $val['id'];
+    }
+    $criticality = new Сriticality();
+    $criticalityIds = $criticality->select('id')->findAll();
+    $criticality = null;
+    foreach($criticalityIds as $key => $val) {
+      $criticalityIds[$key] = $val['id'];
+    }
+    $ninetyDays = 7776000;
+    $OneDay = 86400;
+
+    foreach($monObjectIds as $index => $id_obj) {
+      for ($i = 0; $i < 20; $i++) {
+        $random = rand(0, 100);
+        //Generate a timestamp using mt_rand.
+      
+        $timestamp = mt_rand(time() - $ninetyDays, time());
+        //Format that timestamp into a readable date string.
+        $randomDateBegin = date("Y-m-d H:i:s+05", $timestamp); // https://www.php.net/manual/en/datetime.format.php
+        $randomDateEnd = date("Y-m-d H:i:s+05", $timestamp + rand(60, $OneDay));
+        $malfunctionsExample[] = [
+          'id_obj' => (int)$id_obj,
+          'id_reason' => (int)$this->getIndexAsRoundArray($reasonIds, $random),
+          'id_criticality' => (int)$this->getIndexAsRoundArray($criticalityIds, $random), 
+          'begin' => $randomDateBegin,
+          'end' => $randomDateEnd,
+          'reliability' => rand(50, 100),
+          'percent' => rand(1, 100)
+        ];
+      }
+    }
+    return $malfunctionsExample;
   }
 
   private function getUserDataExample(): array {
@@ -47,5 +143,102 @@ class ExampleFill extends BaseController
       }
     }
     return $res;
+  }
+ 
+  private function getMonObjectDataExample(int $count): array {
+    $res = [];
+    $letters = ['А', 'В', 'Е', 'К', 'М', 'Н', 'О', 'Р', 'С', 'Т', 'Х', 'У'];
+    $models = ['Урал', 'КамАЗ', 'MAN', 'Sitrak', 'Volvo'];
+    for($i = 1; $i < $count + 1; $i++) {
+      $state_number = $this->getIndexAsRoundArray($letters, $i) . 
+        ' ' . rand(100, 999) . ' ' . 
+        $this->getIndexAsRoundArray($letters, $i + 1) .
+        $this->getIndexAsRoundArray($letters, $i + 2);
+      $model = $this->getIndexAsRoundArray($models, $i);
+      
+      $res[] = [
+        'state_number' => $state_number, 
+        'model' => $model
+      ];
+    }
+    return $res;
+  }
+
+  private function getIndexAsRoundArray(array &$arr, int $iteration) {
+    $count = count($arr);
+    if (!$count) return null;
+    $i = $iteration % $count;
+    return $arr[$i];
+  }
+
+  private function getСriticalityExample(): array {
+    return [
+      [
+        'name' => 'Не критичное', 
+        'is_notification' => FALSE,
+      ],
+      [
+        'name' => 'Временная неисправность', 
+        'is_notification' => FALSE,
+      ],
+      [
+        'name' => 'Влияет на важные показатели', 
+        'is_notification' => TRUE,
+      ],
+      [
+        'name' => 'Система неисправна', 
+        'is_notification' => TRUE,
+      ],
+    ];
+  }
+
+  private function getDispatcherStatusesExample(): array {
+    return [
+      [
+        'status' => 'Отсутствует', 
+      ],
+      [
+        'name' => 'Проверяется диспетчером', 
+      ],
+      [
+        'name' => 'Диспетчер отклонил неисправность', 
+      ],
+      [
+        'name' => 'Отправлен вопрос в техподдержку',
+      ],
+    ];
+  }
+
+  private function getReasonsExample(): array {
+    return [
+      [
+        'name' => 'Отсутствие ГЛОНАСС сигнала', 
+        'is_mileage' => TRUE, 
+        'is_fuel_level' => FALSE,
+        'is_moto' => FALSE,
+        'is_can' => FALSE
+      ],
+      [
+        'name' => 'Неисправность датчика уровня топлива в баке', 
+        'is_mileage' => FALSE, 
+        'is_fuel_level' => TRUE,
+        'is_moto' => FALSE,
+        'is_can' => FALSE
+      ],
+      [
+        'name' => 'Движение без фиксации работы двигателя', 
+        'is_mileage' => FALSE, 
+        'is_fuel_level' => FALSE,
+        'is_moto' => TRUE,
+        'is_can' => FALSE
+      ],
+      [
+        'name' => 'Отсутствуют CAN данные', 
+        'is_mileage' => FALSE, 
+        'is_fuel_level' => FALSE,
+        'is_moto' => FALSE,
+        'is_can' => TRUE
+      ],
+    ];
   }
 }
