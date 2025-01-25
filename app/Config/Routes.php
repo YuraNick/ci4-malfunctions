@@ -23,4 +23,5 @@ $routes->match(['get', 'post'],'/notification/add', 'DependentTables::notificati
 $routes->match(['get'],'/notifications', 'DependentTables::getNotifications');
 
 
+$routes->match(['get'],'/fill-examples_data', 'ExampleFill::fill');
 $routes->match(['get'],'/template/malfunctions', 'TemplateTables::getMalfunctions');

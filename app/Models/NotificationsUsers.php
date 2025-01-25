@@ -2,15 +2,16 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class Notifications extends Model
+class NotificationsUsers extends Model
 {
-  protected $table = 'malfunction.notifications';
+  protected $table = 'malfunction.notifications_users';
   protected $primaryKey = 'id';
   protected $useAutoIncreament = true;
 
   protected $allowedFields = [
-    'text',
-    'id_malfunction', 
+    'notifications_id',
+    'id_user', 
+    'is_sended', 
   ];
 
 }

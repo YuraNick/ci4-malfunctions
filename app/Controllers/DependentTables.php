@@ -165,6 +165,12 @@ class DependentTables extends BaseController
     // 'percent')
   }
 
+  public function getNotifications() {
+    $model = new Notifications();
+    $rows = $model->join('malfunction.notifications_users', 'malfunction.notifications.id = malfunction.notifications_users.notifications_id', 'left')->findAll();
+    return $this->get($rows, 'Уведомления о неисправностях');
+  }
+
   private function getShortMalfunctions(): array {
     $model = new Malfunctions();
     $rows = $model->select(
