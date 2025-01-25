@@ -4,10 +4,10 @@
     <li><a class="nav-item" href="/users">Посмотреть всех пользователей</a></li>
     <li><a class="nav-item" href="/monObject/add">Добавить объект мониторинга (транспортное средство)</a></li>
     <li><a class="nav-item" href="/monObjects">Посмотреть все объекты мониторинга (транспортные средства)</a></li>
-    <li><a class="nav-item" href="/criticality/add">Добавить критичности события в справочник</a></li>
-    <li><a class="nav-item" href="/criticality">Посмотреть справочник критичности событий</a></li>
-    <li><a class="nav-item" href="/reason/add">Добавить причину неисправност в справочник</a></li>
-    <li><a class="nav-item" href="/reasons">Посмотреть справочник причин неисправности</a></li>
+    <li><a class="nav-item" href="/criticality/add">Добавить критичность события в справочник</a></li>
+    <li><a class="nav-item" href="/criticality">Посмотреть справочник критичностей событий</a></li>
+    <li><a class="nav-item" href="/reason/add">Добавить причину неисправности в справочник</a></li>
+    <li><a class="nav-item" href="/reasons">Посмотреть справочник причин неисправностей</a></li>
     <li><a class="nav-item" href="/dispatcherStatus/add">Добавить статус неисправности от диспетчера в справочник</a></li>
     <li><a class="nav-item" href="/dispatcherStatuses">Посмотреть справочник статусов неисправностей от диспетчера</a></li>
     <li><a class="nav-item" href="/malfunction/add">Добавить обнаруженную неисправность</a></li>

@@ -7,6 +7,7 @@ use App\Models\MonObject;
 use App\Models\Reasons;
 use App\Models\Сriticality;
 use App\Models\Malfunctions;
+use App\Models\Notifications;
 use App\Models\DispatcherStatuses;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
@@ -27,6 +28,8 @@ class ExampleFill extends BaseController
     $info[] = "Добавлено критичностей в таблицу cdispatcher_statuses: $dispatcherStatusesCount";
     $malfunctionsCount = $this->fillMalfunctions();
     $info[] = "Добавлено неисправностей по объектам мониторинга (автомобилям) в таблицу malfunctions: $malfunctionsCount";
+    $notificationsCount = $this->fillNotifications();
+    $info[] = "Добавлено уведомлений о неисправностях в таблицу notifications: $notificationsCount";
     
     return implode('<br>', $info);
   }
@@ -55,8 +58,6 @@ class ExampleFill extends BaseController
     return $this->insertData($model, $data);
   }
 
-
-
   public function fillUsers(): string {
     $model = new User();
     $data = $this->getUserDataExample();
@@ -66,6 +67,12 @@ class ExampleFill extends BaseController
   public function fillMonObjects(int $count): string {
     $model = new MonObject();
     $data = $this->getMonObjectDataExample($count);
+    return $this->insertData($model, $data);
+  }
+
+  public function fillNotifications(): string {
+    $model = new Notifications();
+    $data = $this->getFillNotificationsDataExample();
     return $this->insertData($model, $data);
   }
 
@@ -82,25 +89,32 @@ class ExampleFill extends BaseController
 
   private function getMalfunctionsExample(): array {
     $malfunctionsExample = [];
+    
     $monObject = new MonObject();
     $monObjectIds = $monObject->select('id')->findAll();
     $monObject = null;
+    foreach($monObjectIds as $key => $val) {
+      $monObjectIds[$key] = (int)$val['id'];
+    }
+
     $reasons = new Reasons();
     $reasonIds = $reasons->select('id')->findAll();
     $reasons = null;
     foreach($reasonIds as $key => $val) {
-      $reasonIds[$key] = $val['id'];
+      $reasonIds[$key] = (int)$val['id'];
     }
+    
     $criticality = new Сriticality();
     $criticalityIds = $criticality->select('id')->findAll();
     $criticality = null;
     foreach($criticalityIds as $key => $val) {
-      $criticalityIds[$key] = $val['id'];
+      $criticalityIds[$key] = (int)$val['id'];
     }
+
     $ninetyDays = 7776000;
     $OneDay = 86400;
 
-    foreach($monObjectIds as $index => $id_obj) {
+    foreach($monObjectIds as $id_obj) {
       for ($i = 0; $i < 20; $i++) {
         $random = rand(0, 100);
         //Generate a timestamp using mt_rand.
@@ -110,9 +124,9 @@ class ExampleFill extends BaseController
         $randomDateBegin = date("Y-m-d H:i:s+05", $timestamp); // https://www.php.net/manual/en/datetime.format.php
         $randomDateEnd = date("Y-m-d H:i:s+05", $timestamp + rand(60, $OneDay));
         $malfunctionsExample[] = [
-          'id_obj' => (int)$id_obj,
-          'id_reason' => (int)$this->getIndexAsRoundArray($reasonIds, $random),
-          'id_criticality' => (int)$this->getIndexAsRoundArray($criticalityIds, $random), 
+          'id_obj' => $id_obj,
+          'id_reason' => $this->getIndexAsRoundArray($reasonIds, $random),
+          'id_criticality' => $this->getIndexAsRoundArray($criticalityIds, $random), 
           'begin' => $randomDateBegin,
           'end' => $randomDateEnd,
           'reliability' => rand(50, 100),
@@ -121,6 +135,45 @@ class ExampleFill extends BaseController
       }
     }
     return $malfunctionsExample;
+  }
+
+  private function getFillNotificationsDataExample(): array {
+    $notificationsDataExample = [];
+    // получить все уведомления со статусом отправить
+    $model = new Malfunctions();
+    $needNotifications = $model->select(
+      'malfunction.malfunctions.id as id, 
+      malfunction.malfunctions.id_criticality as id_criticality,
+      malfunction.malfunctions.begin as begin,
+      malfunction.malfunctions.end as end,
+      malfunction.malfunctions.reliability as reliability,
+      malfunction.malfunctions.percent as percent,
+      malfunction.obj_mon.state_number as state_number,
+      malfunction.criticality.is_notification as is_notification,
+      malfunction.reasons.name as reason'
+    )->join(
+      'malfunction.criticality', 'malfunction.malfunctions.id_criticality = malfunction.criticality.id'
+    )->join(
+      'malfunction.obj_mon', 'malfunction.malfunctions.id_obj = malfunction.obj_mon.id'
+    )->join(
+      'malfunction.reasons', 'malfunction.malfunctions.id_reason = malfunction.reasons.id'
+    )->where('is_notification', TRUE)->findAll();
+    foreach($needNotifications as $needNotification) {
+      [
+        'begin' => $begin,
+        'end' => $end,
+        'reliability' => $reliability,
+        'percent' => $percent,
+        'state_number' => $state_number,
+        'reason' => $reason,
+      ] = $needNotification;
+      $text = "По объекту $state_number с вероятностью $reliability% обнаружена неисправность \"$reason\" с $begin по $end в течение $percent% времени";
+      $notificationsDataExample[] = [
+        'id_malfunction' => $needNotification['id'],
+        'text' => $text,
+      ];
+    }
+    return $notificationsDataExample;
   }
 
   private function getUserDataExample(): array {
