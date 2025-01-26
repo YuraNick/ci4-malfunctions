@@ -17,12 +17,17 @@ $routes->match(['get', 'post'],'/reason/add', 'IndependentTables::addReason');
 $routes->match(['get'],'/reasons', 'IndependentTables::getReasons');
 $routes->match(['get', 'post'],'/dispatcherStatus/add', 'IndependentTables::addDispatcherStatus');
 $routes->match(['get'],'/dispatcherStatuses', 'IndependentTables::getDispatcherStatuses');
+
 $routes->match(['get', 'post'],'/malfunction/add', 'DependentTables::malfunctionsAdd');
 $routes->match(['get'],'/malfunctions', 'DependentTables::getMalfunctions');
 $routes->match(['get', 'post'],'/notification/add', 'DependentTables::notificationsAdd');
 $routes->match(['get'],'/notifications', 'DependentTables::getNotifications');
 $routes->match(['get', 'post'],'/notificationUser/add', 'DependentTables::notificationsUsersAdd');
 $routes->match(['get'],'/notificationsUsers', 'DependentTables::getNotificationsUsers');
+$routes->match(['get', 'post'],'/notificationUser/add', 'DependentTables::notificationsUsersAdd');
+$routes->match(['get'],'/notificationsUsers', 'DependentTables::getNotificationsUsers');
+$routes->match(['get', 'post'],'/dispatcherConfirm/add', 'DependentTables::dispatcherConfirmsAdd');
+$routes->match(['get'],'/dispatcherConfirms', 'DependentTables::getDispatcherConfirms');
 
 
 $routes->match(['get'],'/fill-examples_data', 'ExampleFill::fill');

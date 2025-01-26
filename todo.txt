@@ -1,0 +1,14 @@
+# добавлена_форма таблица добавлена_автовставка
+1 dispatcher_support_answers 
+2 + obj_mon +
+3 + reasons +
+4 + criticality +
+5 + malfunctions + - составная
+6 dispatcher_support_questions
+7 + dispatcher_confirms
+8 + notifications +
+9 support_developer_questions
+10 support_developer_answers
+11 + notifications_users +
+12 + users +
+13 + dispatcher_statuses +

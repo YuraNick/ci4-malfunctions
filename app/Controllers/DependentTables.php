@@ -10,6 +10,7 @@ use App\Models\Reasons;
 use App\Models\Notifications;
 use App\Models\NotificationsUsers;
 use App\Models\DispatcherStatuses;
+use App\Models\DispatcherConfirms;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class DependentTables extends BaseController
@@ -122,19 +123,7 @@ class DependentTables extends BaseController
       'text' => $this->request->getPost('text'),
     ];
 
-    $malfunctions = $this->getShortMalfunctions();
-    foreach ($malfunctions as $index => $malfunction) {
-      ['id' => $m_id, 
-        'state_number' => $m_state_number,
-        'begin' => $m_begin,
-        'end' => $m_end,
-        'reason' => $m_reason,
-      ] = $malfunction;
-      $malfunctions[$index] = [
-        'id' => $m_id,
-        'value' => "id $m_id объект $m_state_number причина $m_reason с $m_begin по $m_end"
-      ];
-    }
+    $malfunctions = $this->getMalfunctionsFullDescription();
 
     $description = [
       'id_malfunction' => ['label' => 'Неисправность', 'type' => 'select', 'options' => $malfunctions, 'required' => 'required'],
@@ -152,7 +141,7 @@ class DependentTables extends BaseController
     );
   }
 
-  public function notificationsUsersAdd() {
+  public function notificationsUsersAdd(): string {
     $data = [
       'notifications_id' => $this->request->getPost('notifications_id'),
       'id_user' => $this->request->getPost('id_user'),
@@ -179,10 +168,54 @@ class DependentTables extends BaseController
     );
   }
 
+  public function dispatcherConfirmsAdd(): string {
+    $data = [
+      'id_malfunction' => $this->request->getPost('id_malfunction'),
+      'id_user' => $this->request->getPost('id_user'),
+      'id_status' => $this->request->getPost('id_status'),
+      'timestamp' => $this->request->getPost('timestamp'),
+      'comment' => $this->request->getPost('comment'),
+    ];
+
+    $malfunction = $this->getMalfunctionsFullDescription();
+    $users = $this->getShortUsers();
+    $dispatcherStatuses = $this->getShortDispatcherStatuses();
+
+    $description = [
+      'id_malfunction' => ['label' => 'Неисправность', 'type' => 'select', 'options' => $malfunction, 'required' => 'required'],
+      'id_user' => ['label' => 'Пользователь', 'type' => 'select', 'options' => $users, 'required' => 'required'],
+      'id_status' => ['label' => 'Статус неисправности', 'type' => 'select', 'options' => $dispatcherStatuses, 'required' => 'required'],
+      'timestamp' => ['label' => 'Статус выставлен (для разработки)', 'type' => 'datetime', 'required' => 'required'],
+      'comment' => ['label' => 'Комментарий', 'type' => 'textarea', 'required' => ''],
+    ];
+
+    $heading = 'Добавление статуса неисправности диспетчером';
+    $model = new DispatcherConfirms();
+    return $this->add(
+      $model,
+      $data,
+      'id_malfunction',
+      $description,
+      $heading,
+    );
+  }
+
   public function getMalfunctions() {
     $model = new Malfunctions();
     $rows = $model->findAll();
     return $this->get($rows, 'Выявленные неисправности');
+  }
+
+  public function getDispatcherConfirms(): string {
+    $model = new DispatcherConfirms();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Статусы и комментарии диспетчера по обнаруженным неисправностям');
+  }
+
+  public function getShortDispatcherStatuses(): array {
+    $model = new DispatcherStatuses();
+    $rows = $model->select('id, status as value')->findAll();
+    return $rows;
   }
 
   public function getNotifications() {
@@ -209,9 +242,9 @@ class DependentTables extends BaseController
     return $this->get($rows, 'Уведомления пользователей о неисправностях');
   }
 
-  private function getShortMalfunctions(): array {
+  private function getMalfunctionsFullDescription(): array {
     $model = new Malfunctions();
-    $rows = $model->select(
+    $malfunctions = $model->select(
       'malfunction.malfunctions.id as id, 
       malfunction.obj_mon.state_number as state_number, 
       malfunction.reasons.name as reason,
@@ -220,7 +253,19 @@ class DependentTables extends BaseController
     )->join('malfunction.obj_mon', 'malfunction.obj_mon.id = malfunction.malfunctions.id_obj'
     )->join('malfunction.reasons', 'malfunction.reasons.id = malfunction.malfunctions.id_reason'
     )->findAll();
-    return $rows;
+    foreach ($malfunctions as $index => $malfunction) {
+      ['id' => $m_id, 
+        'state_number' => $m_state_number,
+        'begin' => $m_begin,
+        'end' => $m_end,
+        'reason' => $m_reason,
+      ] = $malfunction;
+      $malfunctions[$index] = [
+        'id' => $m_id,
+        'value' => "id $m_id объект $m_state_number причина $m_reason с $m_begin по $m_end"
+      ];
+    }
+    return $malfunctions;
   }
 
   private function getObjects(): array {

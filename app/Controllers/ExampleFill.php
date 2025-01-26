@@ -16,7 +16,9 @@ class ExampleFill extends BaseController
 {
   public function fill(): string
   {
-    $info = [];
+    $info = [
+      '<a href="/">На главную</a><br>'
+    ];
     $usersCount = $this->fillUsers();
     $info[] = "Добавлено пользователей в таблицу users: $usersCount";
     $monObjectsCount = $this->fillMonObjects(100);
@@ -26,7 +28,7 @@ class ExampleFill extends BaseController
     $criticalityCount = $this->fillСriticality();
     $info[] = "Добавлено статусов критичностей неисправностей в таблицу criticality: $criticalityCount";
     $dispatcherStatusesCount = $this->fillDispatcherStatuses();
-    $info[] = "Добавлено критичностей в таблицу cdispatcher_statuses: $dispatcherStatusesCount";
+    $info[] = "Добавлено в справочник статусов диспетчера в таблицу dispatcher_statuses: $dispatcherStatusesCount";
     $malfunctionsCount = $this->fillMalfunctions();
     $info[] = "Добавлено неисправностей по объектам мониторинга (автомобилям) в таблицу malfunctions: $malfunctionsCount";
     $notificationsCount = $this->fillNotifications();
@@ -50,7 +52,7 @@ class ExampleFill extends BaseController
   }
 
   private function fillDispatcherStatuses(): string {
-    $model = new Сriticality();
+    $model = new DispatcherStatuses();
     $data = $this->getDispatcherStatusesExample();
     return $this->insertData($model, $data);
   }
@@ -287,13 +289,13 @@ class ExampleFill extends BaseController
         'status' => 'Отсутствует', 
       ],
       [
-        'name' => 'Проверяется диспетчером', 
+        'status' => 'Проверяется диспетчером', 
       ],
       [
-        'name' => 'Диспетчер отклонил неисправность', 
+        'status' => 'Диспетчер отклонил неисправность', 
       ],
       [
-        'name' => 'Отправлен вопрос в техподдержку',
+        'status' => 'Отправлен вопрос в техподдержку',
       ],
     ];
   }
