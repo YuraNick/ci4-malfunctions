@@ -8,28 +8,11 @@ class User extends Model
   protected $primaryKey = 'id';
   protected $useAutoIncreament = true;
 
-  protected $allowedFields = ['login','name', 'email', 'role'];
-  // protected array $casts = [
-  //   'id'        => 'int',
-  //   // 'birthdate' => '?datetime',
-  //   // 'name'   => 'text',
-  //   // 'email'   => 'text',
-  //   // 'role'    => 'text',
-  // ];
+  protected $allowedFields = [
+    'login',
+    'name', 
+    'email',
+    'role'
+  ];
 
-  public function add(array $user) {
-
-  }
-
-  // vendor\codeigniter4\framework\system\Model.php
-  // foreach (array_keys($row) as $key) {
-  //   // Do not remove the non-auto-incrementing primary key data.
-  //   if ($this->useAutoIncrement === false && $key === $this->primaryKey) {
-  //       continue;
-  //   }
-
-  //   if ($this->db->DBDriver === "Postgre" && $this->useAutoIncrement && $key === $this->primaryKey) {
-  //       $row[$key] = 'DEFAULT';
-  //       continue;
-  //   }
 }

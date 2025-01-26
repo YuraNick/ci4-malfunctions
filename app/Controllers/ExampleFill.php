@@ -20,6 +20,16 @@ class ExampleFill extends BaseController
     $info = [
       '<a href="/">На главную</a><br>'
     ];
+    try {
+      $info = $this->fillTables($info);
+    } catch (DatabaseException $err) {
+      $info[] = "Ошибка добавления данных: " . $err->getMessage(); 
+    }
+    
+    return implode('<br>', $info);
+  }
+  
+  private function fillTables(array $info) {
     $usersCount = $this->fillUsers();
     $info[] = "Добавлено пользователей в таблицу users: $usersCount";
     $monObjectsCount = $this->fillMonObjects(100);
@@ -38,8 +48,7 @@ class ExampleFill extends BaseController
     $info[] = "Добавлено уведомлений пользователям о неисправностях в таблицу notifications_users: $notificationsUsersCount";
     $dispatcherConfirmsCount = $this->fillDispatcherConfirms();
     $info[] = "Добавлено статусов неисправностей, имитирующих работу диспетчера, в таблицу dispatcher_confirms: $dispatcherConfirmsCount";
-    
-    return implode('<br>', $info);
+    return $info;
   }
 
   private function fillReasons(): string {
@@ -184,7 +193,7 @@ class ExampleFill extends BaseController
         'id_user' => $usersIds[rand(0, count($usersIds) - 1)], 
         'id_status' => $dispatcherStatusesIds[rand(0, count($dispatcherStatusesIds) - 1)], 
         'timestamp' => $timestamp, 
-        'comment' => $commentsRandom[rand(0, count($commentsRandom)- 1)], 
+        'comment' => $commentsRandom[rand(0, count($commentsRandom) - 1)], 
       ];
     }
     
@@ -249,14 +258,18 @@ class ExampleFill extends BaseController
     $notificationsIds = $notificationsModel->select('id')->findAll();
     $notificationsModel = null;
     $notificationsIds = $this->leaveOnlyIds($notificationsIds);
+    $usersCount = count($usersIds);
 
     foreach($notificationsIds as $notifications_id) {
-      $usersCount = rand(1, 5);
+      $usersCount = rand(1, $usersCount < 5 ? $usersCount : 5);
+      $usersIdsRemained = $usersIds;
       for ($i = 0; $i < $usersCount; $i++) {
-        $userIndex = round(0, count($usersIds));
+        $userIndex = rand(0, count($usersIdsRemained) - 1);
+        $id_user = $usersIdsRemained[$userIndex];
+        array_splice($usersIdsRemained, $userIndex, 1);
         $notificationsUsersDataExample[] = [
           'notifications_id' => $notifications_id,
-          'id_user' => $usersIds[$userIndex],
+          'id_user' => $id_user,
           'is_sended' => (bool)(rand(0, 100) < 50),
         ];
       }
