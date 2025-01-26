@@ -20,6 +20,10 @@
     <li><a class="nav-item" href="/dispatcherConfirms">Посмотреть статусы диспетчеров по выявленным неисправностям</a></li>
     <li><a class="nav-item" href="/dispatcherSupportAnswer/add">Добавить ответ техподдержки на вопрос диспетчера</a></li>
     <li><a class="nav-item" href="/dispatcherSupportAnswers">Посмотреть ответы техподдержки на вопросы диспетчеров</a></li>
+    <li><a class="nav-item" href="/supportDeveloperQuestion/add">Добавить вопрос техподдержки разработчикам</a></li>
+    <li><a class="nav-item" href="/supportDeveloperQuestions">Посмотреть вопросы техподдержки разработчикам</a></li>
+    <li><a class="nav-item" href="/supportDeveloperAnswer/add">Добавить ответ разработчика техподдержке</a></li>
+    <li><a class="nav-item" href="/supportDeveloperAnswers">Посмотреть ответы разработчиков техподдержке</a></li>
     <li><hr class="nav-item"></li>
     <li><a class="nav-item" href="/template/malfunctions">Отчет по неисправностям</a></li>
     <li><a class="nav-item" href="fill-examples_data">Заполнить таблицы тестовыми данными</a></li>

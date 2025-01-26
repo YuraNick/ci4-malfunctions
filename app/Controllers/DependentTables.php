@@ -13,6 +13,8 @@ use App\Models\DispatcherStatuses;
 use App\Models\DispatcherConfirms;
 use App\Models\DispatcherSupportQuestions;
 use App\Models\DispatcherSupportAnswers;
+use App\Models\SupportDeveloperQuestions;
+use App\Models\SupportDeveloperAnswers;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class DependentTables extends BaseController
@@ -43,11 +45,20 @@ class DependentTables extends BaseController
     $added = 0;
     $error = '';
 
+    $timestampColumns = [];
+    foreach($description as $column => $desc) {
+      if (($desc['type'] ?? '') === 'datetime') {
+        $timestampColumns[] = $column;
+      }
+    }
+
     if ($data[$requiredColumn]) {
       try {
         $dataInsert = $data;
-        $dataInsert['begin'] = $this->timeConvertFromPostgres($data['begin'] ?? '', $data['timezone_name'] ?? '');
-        $dataInsert['end'] = $this->timeConvertFromPostgres($data['end'] ?? '', $data['timezone_name'] ?? '');
+        foreach($timestampColumns as $column) {
+          $dataInsert[$column] = $this->timeConvertFromPostgres($data[$column] ?? '', $data['timezone_name'] ?? '');
+        }
+        // $dataInsert['end'] = $this->timeConvertFromPostgres($data['end'] ?? '', $data['timezone_name'] ?? '');
         $added = $model->insert($dataInsert);
         $dataInsert = null;
       } catch (DatabaseException $e) {
@@ -177,6 +188,7 @@ class DependentTables extends BaseController
       'id_status' => $this->request->getPost('id_status'),
       'timestamp' => $this->request->getPost('timestamp'),
       'comment' => $this->request->getPost('comment'),
+      'timezone_name' => $this->request->getPost('timezone_name'),
     ];
 
     $malfunction = $this->getMalfunctionsFullDescription();
@@ -189,6 +201,7 @@ class DependentTables extends BaseController
       'id_status' => ['label' => 'Статус неисправности', 'type' => 'select', 'options' => $dispatcherStatuses, 'required' => 'required'],
       'timestamp' => ['label' => 'Статус выставлен (для разработки)', 'type' => 'datetime', 'required' => 'required'],
       'comment' => ['label' => 'Комментарий', 'type' => 'textarea', 'required' => ''],
+      'timezone_name' => ['type' => 'auto'],
     ];
 
     $heading = 'Добавление статуса неисправности диспетчером';
@@ -209,6 +222,7 @@ class DependentTables extends BaseController
       'timestamp' => $this->request->getPost('timestamp'),
       'importance' => $this->request->getPost('importance'),
       'text' => $this->request->getPost('text'),
+      'timezone_name' => $this->request->getPost('timezone_name'),
     ];
 
     $users = $this->getShortUsers();
@@ -225,6 +239,7 @@ class DependentTables extends BaseController
       'timestamp' => ['label' => 'Вопрос задан (для разработки)', 'type' => 'datetime', 'required' => 'required'],
       'importance' => ['label' => 'Важность', 'type' => 'select', 'options' => $importances, 'required' => 'required'],
       'text' => ['label' => 'Комментарий', 'type' => 'textarea', 'required' => ''],
+      'timezone_name' => ['type' => 'auto'],
     ];
 
     $heading = 'Добавление вопроса диспетчера в техподдержку';
@@ -238,17 +253,18 @@ class DependentTables extends BaseController
     );
   }
 
-  public function dispatcherSupportAnswersAdd(): string {
+  public function supportDeveloperQuestionsAdd(): string {
     $data = [
       'id_user' => $this->request->getPost('id_user'),
-      'id_question' => $this->request->getPost('id_question'),
+      'id_malfunction' => $this->request->getPost('id_malfunction'),
       'timestamp' => $this->request->getPost('timestamp'),
-      'lifetime' => $this->request->getPost('lifetime'),
+      'importance' => $this->request->getPost('importance'),
       'text' => $this->request->getPost('text'),
+      'timezone_name' => $this->request->getPost('timezone_name'),
     ];
 
     $users = $this->getShortUsers();
-    $questions = $this->getShortDispatcherSupportQuestions();
+    $malfunction = $this->getMalfunctionsFullDescription();
 
     $importances = [];
     for($i = 1; $i < 11; $i++) {
@@ -257,10 +273,75 @@ class DependentTables extends BaseController
 
     $description = [
       'id_user' => ['label' => 'Пользователь', 'type' => 'select', 'options' => $users, 'required' => 'required'],
+      'id_malfunction' => ['label' => 'Неисправность', 'type' => 'select', 'options' => $malfunction, 'required' => 'required'],
+      'timestamp' => ['label' => 'Вопрос задан (для разработки)', 'type' => 'datetime', 'required' => 'required'],
+      'importance' => ['label' => 'Важность', 'type' => 'select', 'options' => $importances, 'required' => 'required'],
+      'text' => ['label' => 'Комментарий', 'type' => 'textarea', 'required' => ''],
+      'timezone_name' => ['type' => 'auto'],
+    ];
+
+    $heading = 'Добавление вопроса техподдержки разработчикам';
+    $model = new SupportDeveloperQuestions();
+    return $this->add(
+      $model,
+      $data,
+      'id_malfunction',
+      $description,
+      $heading,
+    );
+  }
+
+  public function supportDeveloperAnswersAdd(): string {
+    $data = [
+      'id_user' => $this->request->getPost('id_user'),
+      'id_question' => $this->request->getPost('id_question'),
+      'timestamp' => $this->request->getPost('timestamp'),
+      'text' => $this->request->getPost('text'),
+      'timezone_name' => $this->request->getPost('timezone_name'),
+    ];
+
+    $users = $this->getShortUsers();
+    $questions = $this->getShortSupportDeveloperQuestions();
+
+    $description = [
+      'id_user' => ['label' => 'Пользователь', 'type' => 'select', 'options' => $users, 'required' => 'required'],
+      'id_question' => ['label' => 'Вопрос техподдержки', 'type' => 'select', 'options' => $questions, 'required' => 'required'],
+      'timestamp' => ['label' => 'Вопрос задан (для разработки)', 'type' => 'datetime', 'required' => 'required'],
+      'text' => ['label' => 'Ответ разработчика техподдержке', 'type' => 'textarea', 'required' => ''],
+      'timezone_name' => ['type' => 'auto'],
+    ];
+
+    $heading = 'Добавление ответа разработчика на вопрос техподдержки';
+    $model = new SupportDeveloperAnswers();
+    return $this->add(
+      $model,
+      $data,
+      'id_question',
+      $description,
+      $heading,
+    );
+  }
+  
+  public function dispatcherSupportAnswersAdd(): string {
+    
+    $data = [
+      'id_user' => $this->request->getPost('id_user'),
+      'id_question' => $this->request->getPost('id_question'),
+      'timestamp' => $this->request->getPost('timestamp'),
+      'text' => $this->request->getPost('text'),
+      'timezone_name' => $this->request->getPost('timezone_name'),
+    ];
+
+    $users = $this->getShortUsers();
+    $questions = $this->getShortDispatcherSupportQuestions();
+
+    $description = [
+      'id_user' => ['label' => 'Пользователь', 'type' => 'select', 'options' => $users, 'required' => 'required'],
       'id_question' => ['label' => 'Вопрос диспетчера', 'type' => 'select', 'options' => $questions, 'required' => 'required'],
       'timestamp' => ['label' => 'Вопрос задан (для разработки)', 'type' => 'datetime', 'required' => 'required'],
       'lifetime' => ['label' => 'Техподдержка ожидает ответа до', 'type' => 'datetime', 'required' => 'required'],
       'text' => ['label' => 'Ответ техподдержки диспетчеру', 'type' => 'textarea', 'required' => ''],
+      'timezone_name' => ['type' => 'auto'],
     ];
 
     $heading = 'Добавление ответа техподдержки на вопрос диспетчера';
@@ -292,8 +373,26 @@ class DependentTables extends BaseController
     return $this->get($rows, 'Ответы техподдержки на вопросы диспетчеров');
   }
 
+  public function getSupportDeveloperQuestions(): string {
+    $model = new SupportDeveloperQuestions();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Вопросы техподдержки разработчикам');
+  }
+  
+  public function getSupportDeveloperAnswers(): string {
+    $model = new SupportDeveloperAnswers();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Ответы разработчиков техподдержке');
+  }
+
   public function getShortDispatcherSupportQuestions(): array {
     $model = new DispatcherSupportQuestions();
+    $rows = $model->select('id, text as value')->findAll();
+    return $rows;
+  }
+
+  public function getShortSupportDeveloperQuestions(): array {
+    $model = new SupportDeveloperQuestions();
     $rows = $model->select('id, text as value')->findAll();
     return $rows;
   }

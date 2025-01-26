@@ -32,6 +32,10 @@ $routes->match(['get', 'post'],'/dispatcherSupportQuestion/add', 'DependentTable
 $routes->match(['get'],'/dispatcherSupportQuestions', 'DependentTables::getDispatcherSupportQuestions');
 $routes->match(['get', 'post'],'/dispatcherSupportAnswer/add', 'DependentTables::dispatcherSupportAnswersAdd');
 $routes->match(['get'],'/dispatcherSupportAnswers', 'DependentTables::getDispatcherSupportAnswers');
+$routes->match(['get', 'post'],'/supportDeveloperQuestion/add', 'DependentTables::supportDeveloperQuestionsAdd');
+$routes->match(['get'],'/supportDeveloperQuestions', 'DependentTables::getSupportDeveloperQuestions');
+$routes->match(['get', 'post'],'/supportDeveloperAnswer/add', 'DependentTables::supportDeveloperAnswersAdd');
+$routes->match(['get'],'/supportDeveloperAnswers', 'DependentTables::getSupportDeveloperAnswers');
 
 
 $routes->match(['get'],'/fill-examples_data', 'ExampleFill::fill');
