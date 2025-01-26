@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Сriticality;
 use App\Models\Reasons;
 use App\Models\Notifications;
+use App\Models\NotificationsUsers;
 use App\Models\DispatcherStatuses;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
@@ -151,24 +152,61 @@ class DependentTables extends BaseController
     );
   }
 
+  public function notificationsUsersAdd() {
+    $data = [
+      'notifications_id' => $this->request->getPost('notifications_id'),
+      'id_user' => $this->request->getPost('id_user'),
+      'is_sended' => (bool)($this->request->getPost('is_sended') === 'on'),
+    ];
+
+    $notifications = $this->getShortNotifications();
+    $users = $this->getShortUsers();
+
+    $description = [
+      'notifications_id' => ['label' => 'Уведомление', 'type' => 'select', 'options' => $notifications, 'required' => 'required'],
+      'id_user' => ['label' => 'Пользователь', 'type' => 'select', 'options' => $users, 'required' => 'required'],
+      'is_sended' => ['label' => 'Сообщение было отправлено (вставлено для разработки)', 'required' => '', 'type' => 'checkbox'],
+    ];
+
+    $heading = 'Добавление уведомления пользователю о неисправности';
+    $model = new NotificationsUsers();
+    return $this->add(
+      $model,
+      $data,
+      'notifications_id',
+      $description,
+      $heading,
+    );
+  }
+
   public function getMalfunctions() {
     $model = new Malfunctions();
     $rows = $model->findAll();
     return $this->get($rows, 'Выявленные неисправности');
-    // select(    
-    //   'id_obj',
-    // 'id_reason', 
-    // 'id_criticality', 
-    // 'begin',
-    // 'end',
-    // 'reliability',
-    // 'percent')
   }
 
   public function getNotifications() {
     $model = new Notifications();
-    $rows = $model->join('malfunction.notifications_users', 'malfunction.notifications.id = malfunction.notifications_users.notifications_id', 'left')->findAll();
-    return $this->get($rows, 'Уведомления о неисправностях');
+    $rows = $model->findAll();
+    return $this->get($rows, 'Уведомления о неисправностях - текст');
+  }
+
+  public function getShortNotifications() {
+    $model = new Notifications();
+    $rows = $model->select('id, text as value')->findAll();
+    return $rows;
+  }
+
+  public function getShortUsers() {
+    $model = new User();
+    $rows = $model->select('id, login as value')->findAll();
+    return $rows;
+  }
+
+  public function getNotificationsUsers() {
+    $model = new NotificationsUsers();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Уведомления пользователей о неисправностях');
   }
 
   private function getShortMalfunctions(): array {

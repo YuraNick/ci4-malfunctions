@@ -80,14 +80,12 @@ class ExampleFill extends BaseController
   }
 
   public function fillNotificationsUsers(): string {
-    $model = new Notifications();
+    $model = new NotificationsUsers();
     $data = $this->getNotificationsUsersDataExample();
     return $this->insertData($model, $data);
   }
 
   private function insertData(\CodeIgniter\Model $model, &$data) : string {
-    // $first = $model->getWhere($data[0])->getResultArray();
-    // $rowsCount = $model->getWhere($data[0])->num_rows();
     $rowsCount = $model->limit(1)->get()->getResultArray();
     if (count($rowsCount)) {
       return '0 - табллица не пуста';
