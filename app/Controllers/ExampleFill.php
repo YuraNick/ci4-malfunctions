@@ -10,6 +10,7 @@ use App\Models\Malfunctions;
 use App\Models\Notifications;
 use App\Models\NotificationsUsers;
 use App\Models\DispatcherStatuses;
+use App\Models\DispatcherConfirms;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class ExampleFill extends BaseController
@@ -35,6 +36,8 @@ class ExampleFill extends BaseController
     $info[] = "Добавлено подготовленных уведомлений о неисправностях в таблицу notifications: $notificationsCount";
     $notificationsUsersCount = $this->fillNotificationsUsers();
     $info[] = "Добавлено уведомлений пользователям о неисправностях в таблицу notifications_users: $notificationsUsersCount";
+    $dispatcherConfirmsCount = $this->fillDispatcherConfirms();
+    $info[] = "Добавлено статусов неисправностей, имитирующих работу диспетчера, в таблицу dispatcher_confirms: $dispatcherConfirmsCount";
     
     return implode('<br>', $info);
   }
@@ -60,6 +63,12 @@ class ExampleFill extends BaseController
   private function fillMalfunctions(): string {
     $model = new Malfunctions();
     $data = $this->getMalfunctionsExample();
+    return $this->insertData($model, $data);
+  }
+
+  private function fillDispatcherConfirms(): string {
+    $model = new DispatcherConfirms();
+    $data = $this->getDispatcherConfirmsExample();
     return $this->insertData($model, $data);
   }
 
@@ -138,6 +147,48 @@ class ExampleFill extends BaseController
       }
     }
     return $malfunctionsExample;
+  }
+
+  private function getDispatcherConfirmsExample() {
+    $dispatcherConfirmsExample = [];
+
+    $malfunctions = new Malfunctions();
+    $malfunctionsData = $malfunctions->select('id, extract(epoch from "end") as end')->findAll();
+    $malfunctions = null;
+    // $malfunctionsIds = $this->leaveOnlyIds($malfunctionsIds);
+
+    $users = new User();
+    $usersIds = $users->select('id')->where('role', 'dispatcher')->findAll();
+    $users = null;
+    $usersIds = $this->leaveOnlyIds($usersIds);
+
+    $dispatcherStatuses = new DispatcherStatuses();
+    $dispatcherStatusesIds = $dispatcherStatuses->select('id')->findAll();
+    $dispatcherStatuses = null;
+    $dispatcherStatusesIds = $this->leaveOnlyIds($dispatcherStatusesIds);
+
+    $commentsRandom = [
+      'На рассмотрении',
+      'Подтверждена, требуется выезд специалистов',
+      'Производилось техническое обслуживание системы',
+      'Намеренная порча оборудования',
+      'Неисправность не подтверждена'
+    ];
+
+    foreach($malfunctionsData as $malfunction) {
+      if (rand(0,100) < 50) continue;
+      $end = (int)$malfunction['end'];
+      $timestamp = date("Y-m-d H:i:s+05", $end + rand(60, 86400*7));
+      $dispatcherConfirmsExample[] = [
+        'id_malfunction' => $malfunction['id'], 
+        'id_user' => $usersIds[rand(0, count($usersIds) - 1)], 
+        'id_status' => $dispatcherStatusesIds[rand(0, count($dispatcherStatusesIds) - 1)], 
+        'timestamp' => $timestamp, 
+        'comment' => $commentsRandom[rand(0, count($commentsRandom)- 1)], 
+      ];
+    }
+    
+    return $dispatcherConfirmsExample;
   }
 
   private function leaveOnlyIds(array $arr) : array {

@@ -1,5 +1,18 @@
 <h3 class="text-center">Главная страница диагностики работы системы ГЛОНАСС мониторинга транспорта</h3>
   <ul class="nav flex-column p-3">
+    <li><a class="nav-item text-success" href="/create_tables">
+      Создать схему и таблицы
+      <span class = "text-info"> !!! все существующие данные в схеме malfunction будут удалены !!!</span>
+    </a>
+      
+
+    </li>
+    <li>
+      <a class="nav-item text-success" href="/fill-examples_data">
+        Заполнить таблицы тестовыми данными 
+        <span class = "text-info"> (только для пустых таблиц)</span></a>
+      </li>
+    <li><hr class="nav-item"></li>
     <li><a class="nav-item" href="/user/add">Добавить пользователя</a></li>
     <li><a class="nav-item" href="/users">Посмотреть всех пользователей</a></li>
     <li><a class="nav-item" href="/monObject/add">Добавить объект мониторинга (транспортное средство)</a></li>
@@ -26,5 +39,6 @@
     <li><a class="nav-item" href="/supportDeveloperAnswers">Посмотреть ответы разработчиков техподдержке</a></li>
     <li><hr class="nav-item"></li>
     <li><a class="nav-item" href="/template/malfunctions">Отчет по неисправностям</a></li>
-    <li><a class="nav-item" href="fill-examples_data">Заполнить таблицы тестовыми данными</a></li>
+    <li><hr class="nav-item"></li>
+    <li><a class="nav-item text-danger" href="/truncate_tables">Очистить таблицы (удалить данные)</a></li>
   </ul>

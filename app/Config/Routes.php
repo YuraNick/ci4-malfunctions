@@ -37,6 +37,9 @@ $routes->match(['get'],'/supportDeveloperQuestions', 'DependentTables::getSuppor
 $routes->match(['get', 'post'],'/supportDeveloperAnswer/add', 'DependentTables::supportDeveloperAnswersAdd');
 $routes->match(['get'],'/supportDeveloperAnswers', 'DependentTables::getSupportDeveloperAnswers');
 
+$routes->match(['get'],'/supportDeveloperAnswers', 'DependentTables::getSupportDeveloperAnswers');
+
 
 $routes->match(['get'],'/fill-examples_data', 'ExampleFill::fill');
-$routes->match(['get'],'/template/malfunctions', 'TemplateTables::getMalfunctions');
+$routes->match(['get'],'/truncate_tables', 'ManageTables::truncate');
+$routes->match(['get'],'/create_tables', 'ManageTables::create');
