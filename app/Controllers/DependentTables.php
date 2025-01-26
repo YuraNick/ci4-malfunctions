@@ -11,6 +11,8 @@ use App\Models\Notifications;
 use App\Models\NotificationsUsers;
 use App\Models\DispatcherStatuses;
 use App\Models\DispatcherConfirms;
+use App\Models\DispatcherSupportQuestions;
+use App\Models\DispatcherSupportAnswers;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class DependentTables extends BaseController
@@ -200,10 +202,100 @@ class DependentTables extends BaseController
     );
   }
 
+  public function dispatcherSupportQuestionsAdd(): string {
+    $data = [
+      'id_user' => $this->request->getPost('id_user'),
+      'id_malfunction' => $this->request->getPost('id_malfunction'),
+      'timestamp' => $this->request->getPost('timestamp'),
+      'importance' => $this->request->getPost('importance'),
+      'text' => $this->request->getPost('text'),
+    ];
+
+    $users = $this->getShortUsers();
+    $malfunction = $this->getMalfunctionsFullDescription();
+
+    $importances = [];
+    for($i = 1; $i < 11; $i++) {
+      $importances[] = ['id' => (string)$i, 'value' => $i];
+    }
+
+    $description = [
+      'id_user' => ['label' => 'Пользователь', 'type' => 'select', 'options' => $users, 'required' => 'required'],
+      'id_malfunction' => ['label' => 'Неисправность', 'type' => 'select', 'options' => $malfunction, 'required' => 'required'],
+      'timestamp' => ['label' => 'Вопрос задан (для разработки)', 'type' => 'datetime', 'required' => 'required'],
+      'importance' => ['label' => 'Важность', 'type' => 'select', 'options' => $importances, 'required' => 'required'],
+      'text' => ['label' => 'Комментарий', 'type' => 'textarea', 'required' => ''],
+    ];
+
+    $heading = 'Добавление вопроса диспетчера в техподдержку';
+    $model = new DispatcherSupportQuestions();
+    return $this->add(
+      $model,
+      $data,
+      'id_malfunction',
+      $description,
+      $heading,
+    );
+  }
+
+  public function dispatcherSupportAnswersAdd(): string {
+    $data = [
+      'id_user' => $this->request->getPost('id_user'),
+      'id_question' => $this->request->getPost('id_question'),
+      'timestamp' => $this->request->getPost('timestamp'),
+      'lifetime' => $this->request->getPost('lifetime'),
+      'text' => $this->request->getPost('text'),
+    ];
+
+    $users = $this->getShortUsers();
+    $questions = $this->getShortDispatcherSupportQuestions();
+
+    $importances = [];
+    for($i = 1; $i < 11; $i++) {
+      $importances[] = ['id' => (string)$i, 'value' => $i];
+    }
+
+    $description = [
+      'id_user' => ['label' => 'Пользователь', 'type' => 'select', 'options' => $users, 'required' => 'required'],
+      'id_question' => ['label' => 'Вопрос диспетчера', 'type' => 'select', 'options' => $questions, 'required' => 'required'],
+      'timestamp' => ['label' => 'Вопрос задан (для разработки)', 'type' => 'datetime', 'required' => 'required'],
+      'lifetime' => ['label' => 'Техподдержка ожидает ответа до', 'type' => 'datetime', 'required' => 'required'],
+      'text' => ['label' => 'Ответ техподдержки диспетчеру', 'type' => 'textarea', 'required' => ''],
+    ];
+
+    $heading = 'Добавление ответа техподдержки на вопрос диспетчера';
+    $model = new DispatcherSupportAnswers();
+    return $this->add(
+      $model,
+      $data,
+      'id_question',
+      $description,
+      $heading,
+    );
+  }
+
   public function getMalfunctions() {
     $model = new Malfunctions();
     $rows = $model->findAll();
     return $this->get($rows, 'Выявленные неисправности');
+  }
+
+  public function getDispatcherSupportQuestions(): string {
+    $model = new DispatcherSupportQuestions();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Вопросы диспетчера в техподдержку');
+  }
+
+  public function getDispatcherSupportAnswers(): string {
+    $model = new DispatcherSupportAnswers();
+    $rows = $model->findAll();
+    return $this->get($rows, 'Ответы техподдержки на вопросы диспетчеров');
+  }
+
+  public function getShortDispatcherSupportQuestions(): array {
+    $model = new DispatcherSupportQuestions();
+    $rows = $model->select('id, text as value')->findAll();
+    return $rows;
   }
 
   public function getDispatcherConfirms(): string {

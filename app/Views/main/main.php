@@ -18,6 +18,8 @@
     <li><a class="nav-item" href="/notificationsUsers">Посмотреть уведомления пользователей о неисправностях</a></li>
     <li><a class="nav-item" href="/dispatcherConfirm/add">Добавить статус диспетчера по выявленной неисправности</a></li>
     <li><a class="nav-item" href="/dispatcherConfirms">Посмотреть статусы диспетчеров по выявленным неисправностям</a></li>
+    <li><a class="nav-item" href="/dispatcherSupportAnswer/add">Добавить ответ техподдержки на вопрос диспетчера</a></li>
+    <li><a class="nav-item" href="/dispatcherSupportAnswers">Посмотреть ответы техподдержки на вопросы диспетчеров</a></li>
     <li><hr class="nav-item"></li>
     <li><a class="nav-item" href="/template/malfunctions">Отчет по неисправностям</a></li>
     <li><a class="nav-item" href="fill-examples_data">Заполнить таблицы тестовыми данными</a></li>

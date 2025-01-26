@@ -28,6 +28,10 @@ $routes->match(['get', 'post'],'/notificationUser/add', 'DependentTables::notifi
 $routes->match(['get'],'/notificationsUsers', 'DependentTables::getNotificationsUsers');
 $routes->match(['get', 'post'],'/dispatcherConfirm/add', 'DependentTables::dispatcherConfirmsAdd');
 $routes->match(['get'],'/dispatcherConfirms', 'DependentTables::getDispatcherConfirms');
+$routes->match(['get', 'post'],'/dispatcherSupportQuestion/add', 'DependentTables::dispatcherSupportQuestionsAdd');
+$routes->match(['get'],'/dispatcherSupportQuestions', 'DependentTables::getDispatcherSupportQuestions');
+$routes->match(['get', 'post'],'/dispatcherSupportAnswer/add', 'DependentTables::dispatcherSupportAnswersAdd');
+$routes->match(['get'],'/dispatcherSupportAnswers', 'DependentTables::getDispatcherSupportAnswers');
 
 
 $routes->match(['get'],'/fill-examples_data', 'ExampleFill::fill');
