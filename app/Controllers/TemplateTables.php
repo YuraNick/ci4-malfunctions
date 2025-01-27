@@ -53,7 +53,32 @@ class TemplateTables extends BaseController
       'from' => $from,
       'to' => $to,
       'timezone_name' => $timezone_name,
+      'group_by' => $group_by,
     ] = $data;
+
+
+    $select = match($group_by) {
+      'state_number' => '"malfunction"."obj_mon"."state_number" as "state_number", 
+        count("malfunction"."malfunctions"."id") as count, 
+        ROUND(avg("malfunction"."malfunctions"."reliability"), 2) as avg_reliability, 
+        ROUND(avg("malfunction"."malfunctions"."percent"), 2) as avg_percent
+      ',
+      'reason' => 'malfunction.reasons.name as reason,
+        count("malfunction"."malfunctions"."id") as count,
+        ROUND(avg("malfunction"."malfunctions"."reliability"), 2) as avg_reliability,
+        ROUND(avg("malfunction"."malfunctions"."percent"), 2) as avg_percent
+      ',
+      'criticality' => 'malfunction.criticality.name as criticality,
+        count("malfunction"."malfunctions"."id") as count,
+        ROUND(avg("malfunction"."malfunctions"."reliability"), 2) as avg_reliability,
+        ROUND(avg("malfunction"."malfunctions"."percent"), 2) as avg_percent
+      ',
+      default => 'malfunction.malfunctions.id, 
+        malfunction.obj_mon.state_number as state_number,
+        malfunction.reasons.name as reason,
+        malfunction.criticality.name as criticality,
+        begin, end, reliability, percent',
+    };
 
     $where = '';
     if ($from && $to && $timezone_name) {
@@ -64,33 +89,33 @@ class TemplateTables extends BaseController
     (malfunction.malfunctions.end > '$from' AND malfunction.malfunctions.end < '$to')";
     }
 
-
     $model = new Malfunctions();
-    $build = $model->select(
-      'malfunction.malfunctions.id, 
-      malfunction.obj_mon.state_number as state_number,
-      malfunction.reasons.name as reason,
-      malfunction.criticality.name as criticality,
-      begin, end, reliability, percent'    
-    )->join('malfunction.obj_mon', 'malfunction.obj_mon.id = malfunction.malfunctions.id_obj'
-    )->join('malfunction.reasons', 'malfunction.reasons.id = malfunction.malfunctions.id_reason'
-    )->join('malfunction.criticality', 'malfunction.criticality.id = malfunction.malfunctions.id_criticality');
+    $build = $model->select($select   
+      )->join('malfunction.obj_mon', 'malfunction.obj_mon.id = malfunction.malfunctions.id_obj'
+      )->join('malfunction.reasons', 'malfunction.reasons.id = malfunction.malfunctions.id_reason'
+      )->join('malfunction.criticality', 'malfunction.criticality.id = malfunction.malfunctions.id_criticality');
     if ($where) {
       $build->where($where);
     }
-    // )->where('malfunction.malfunctions.end <', $data['to']  
-    $rows = $build->findAll();
 
-    $group_by = [
-      ['id' => 'obj_id', 'value' => 'объекту мониторинга'],
+    $groupByOptions = [
+      ['id' => 'state_number', 'value' => 'объекту мониторинга'],
       ['id' => 'reason', 'value' => 'причине неисправности'],
       ['id' => 'criticality', 'value' => 'критичности'],
     ];
 
+    if (array_search($group_by, array_column($groupByOptions, 'id')) !== FALSE) {
+      $build->groupBy($group_by);
+    }
+    // )->where('malfunction.malfunctions.end <', $data['to']  
+    $rows = $build->findAll();
+
+
+
     $description = [
       'from' => ['label' => 'С', 'type' => 'datetime', 'required' => 'required'],
       'to' => ['label' => 'ПО', 'type' => 'datetime', 'required' => 'required'],
-      'group_by' => ['label' => 'Группировка', 'type' => 'select', 'options' => $group_by, 'required' => ''],
+      'group_by' => ['label' => 'Группировка по', 'type' => 'select', 'options' => $groupByOptions, 'required' => ''],
       'timezone_name' => ['type' => 'auto'],
     ];
     
