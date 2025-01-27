@@ -7,3 +7,12 @@ if (!function_exists("isAllDataHelper")) {
     return TRUE;
   }
 }
+
+if (!function_exists('timeConvertFromPostgres_helper')) {
+  function timeConvertFromPostgres_helper(string $t, string $timezoneName): string {
+    if (!$t || !$timezoneName) return $t;
+    // list($day, $month, $year, $hh, $mm, $ss) = sscanf($t, "%d.%d.%dT%d:%d::%d");
+    $t = str_replace('T', ' ', $t);
+    return "$t $timezoneName";
+  }
+}

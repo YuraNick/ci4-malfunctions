@@ -56,7 +56,7 @@
   <?php endforeach; ?>
 
   <div class="d-flex justify-content-center">
-    <button type="submit" class="btn btn-primary my-auto">Записать</button>
+    <button type="submit" class="btn btn-primary my-auto"><?=$butttonText ?? 'Записать'?></button>
   </div>
 </form>
 

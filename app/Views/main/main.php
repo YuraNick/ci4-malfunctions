@@ -3,10 +3,7 @@
     <li><a class="nav-item text-success" href="/create_tables">
       Создать схему и таблицы
       <span class = "text-info"> !!! все существующие данные в схеме malfunction будут удалены !!!</span>
-    </a>
-      
-
-    </li>
+    </a></li>
     <li>
       <a class="nav-item text-success" href="/fill-examples_data">
         Заполнить таблицы тестовыми данными 
