@@ -328,6 +328,7 @@ class DependentTables extends BaseController
       'id_user' => $this->request->getPost('id_user'),
       'id_question' => $this->request->getPost('id_question'),
       'timestamp' => $this->request->getPost('timestamp'),
+      'lifetime' => $this->request->getPost('lifetime'),
       'text' => $this->request->getPost('text'),
       'timezone_name' => $this->request->getPost('timezone_name'),
     ];
