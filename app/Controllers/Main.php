@@ -11,4 +11,8 @@ class Main extends BaseController
         $html .= view('html_elements/footer');
         return $html;
     }
+
+    public function healthcheck(): string {
+        return 'ok';
+    }
 }

@@ -11,6 +11,7 @@ use App\Models\Notifications;
 use App\Models\NotificationsUsers;
 use App\Models\DispatcherStatuses;
 use App\Models\DispatcherConfirms;
+use App\Models\DispatcherSupportQuestions;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class ExampleFill extends BaseController
@@ -48,6 +49,8 @@ class ExampleFill extends BaseController
     $info[] = "Добавлено уведомлений пользователям о неисправностях в таблицу notifications_users: $notificationsUsersCount";
     $dispatcherConfirmsCount = $this->fillDispatcherConfirms();
     $info[] = "Добавлено статусов неисправностей, имитирующих работу диспетчера, в таблицу dispatcher_confirms: $dispatcherConfirmsCount";
+    // $dispatcherSupportQuestionsCount = $this->fillDispatcherSupportQuestions();
+    // $info[] = "Добавлено вопросов в техподдержку, имитирующих работу диспетчера, в таблицу dispatcher_support_questions: $dispatcherSupportQuestionsCount";
     return $info;
   }
 
@@ -81,6 +84,12 @@ class ExampleFill extends BaseController
     return $this->insertData($model, $data);
   }
 
+  private function fillDispatcherSupportQuestions(): string {
+    $model = new DispatcherSupportQuestions();
+    $data = $this->getDispatcherSupportQuestions();
+    return $this->insertData($model, $data);
+  }
+
   public function fillUsers(): string {
     $model = new User();
     $data = $this->getUserDataExample();
@@ -108,7 +117,7 @@ class ExampleFill extends BaseController
   private function insertData(\CodeIgniter\Model $model, &$data) : string {
     $rowsCount = $model->limit(1)->get()->getResultArray();
     if (count($rowsCount)) {
-      return '0 - табллица не пуста';
+      return '0 - таблица не пуста';
     }
     $model->insertBatch($data);
     return (string)count($data);
@@ -158,7 +167,7 @@ class ExampleFill extends BaseController
     return $malfunctionsExample;
   }
 
-  private function getDispatcherConfirmsExample() {
+  private function getDispatcherConfirmsExample(): array {
     $dispatcherConfirmsExample = [];
 
     $malfunctions = new Malfunctions();
@@ -198,6 +207,62 @@ class ExampleFill extends BaseController
     }
     
     return $dispatcherConfirmsExample;
+  }
+
+  private function getDispatcherSupportQuestions(): array {
+    $dispatcherSupportQuestionsExample = [];
+
+    $malfunctions = new Malfunctions();
+    $malfunctionsData = $malfunctions->select(
+      'malfunction.malfunctions.id, 
+      extract(epoch from malfunction.malfunctions.end) as end,
+      dispatcher_confirms.user_id'
+    )->join(
+      'malfunction.dispatcher_confirms as dispatcher_confirms', 
+      'malfunction.malfunctions.id = dispatcher_confirms.id_malfunction'
+    )->findAll();
+    $malfunctions = null;
+    // $malfunctionsIds = $this->leaveOnlyIds($malfunctionsIds);
+
+    $users = new User();
+    $usersIds = $users->select('id')->where('role', 'dispatcher')->findAll();
+    $users = null;
+    $usersIds = $this->leaveOnlyIds($usersIds);
+
+    $dispatcherStatuses = new DispatcherStatuses();
+    $dispatcherStatusesIds = $dispatcherStatuses->select('id')->findAll();
+    $dispatcherStatuses = null;
+    $dispatcherStatusesIds = $this->leaveOnlyIds($dispatcherStatusesIds);
+
+    $commentsRandom = [
+      'На рассмотрении',
+      'Подтверждена, требуется выезд специалистов',
+      'Производилось техническое обслуживание системы',
+      'Намеренная порча оборудования',
+      'Неисправность не подтверждена'
+    ];
+
+    foreach($malfunctionsData as $malfunction) {
+      if (rand(0,100) < 50) continue;
+      $end = (int)$malfunction['end'];
+      $timestamp = date("Y-m-d H:i:s+05", $end + rand(60, 86400*7));
+      $dispatcherSupportQuestionsExample[] = [
+        // [
+        //   'id_user', 
+        //   'id_malfunction', 
+        //   'timestamp', 
+        //   'importance', 
+        //   'text', 
+        // ]
+        'id_malfunction' => $malfunction['id'], 
+        'id_user' => $usersIds[rand(0, count($usersIds) - 1)], 
+        'id_status' => $dispatcherStatusesIds[rand(0, count($dispatcherStatusesIds) - 1)], 
+        'timestamp' => $timestamp, 
+        'comment' => $commentsRandom[rand(0, count($commentsRandom) - 1)], 
+      ];
+    }
+    
+    return $dispatcherSupportQuestionsExample;
   }
 
   private function leaveOnlyIds(array $arr) : array {

@@ -1,0 +1,79 @@
+# version: '3'
+networks: 
+  my_network:
+services:  
+  php-malfunctions:
+    container_name: php-malfunctions
+    build: ../
+    restart: always
+    healthcheck:
+      # test: ["CMD-SHELL", "if cgi-fcgi -bind -connect localhost:9000 | grep -q ^ok$; then exit 0; else exit 1; fi"] # only fast-cgi
+      test: ["CMD", "curl", "-f", "http://localhost/healthcheck"] # nginx + fast-cgi
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # volumes:
+    #   - php-api-swagger:/var/www/html/public/swagger-ui
+    environment:
+      # - DATABASE_HOSTNAME=
+      # - DATABASE_USERNAME=
+      # - DATABASE_PASSWORD=
+      # - DATABASE_DATABASE=
+      # - DATABASE_PORT=
+      # - OBJECTSTORAGEAWS_KEY=
+      # - OBJECTSTORAGEAWS_SECRET=
+      # - OBJECTSTORAGEAWS_ENDPOINT=
+      # - OBJECTSTORAGEAWS_BUCKETNAME=
+      DATABASE_HOSTNAME: postgres
+      DATABASE_DATABASE: postgres
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_PORT: 5432
+      CI_ENVIRONMENT: development
+      BASE_URL: 'http://localhost:88'
+      # fast-cgi by test
+      # - DOCUMENT_ROOT=/var/www/html/public
+      # - SCRIPT_FILENAME=/var/www/html/public/index.php
+      # - SCRIPT_NAME=index.php
+      # - REQUEST_METHOD=get
+      # - REQUEST_URI=/healthcheck
+    ports:
+      # - ":9000"
+      - "88:80"
+    depends_on:
+      - postgres
+    networks: 
+      - my_network
+
+  postgres:
+    image: postgres:16.6-alpine3.20
+    container_name: postgres
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - .:/docker-entrypoint-initdb.d
+    ports:
+      - "5434:5432"
+    networks: 
+      - my_network
+
+  # autoheal:
+  #   container_name: autoheal
+  #   restart: always
+  #   image: willfarrell/autoheal
+  #   environment:
+  #     - AUTOHEAL_CONTAINER_LABEL=all
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
+# volumes:
+#   php-api-swagger:
+
+    # seems like fpm receives the full path from nginx
+    # and tries to find the files in this dock, so it must
+    # be the same as nginx.root
+    # volumes:
+    #   - ../public:/var/www/html/public/

@@ -7,6 +7,7 @@ use CodeIgniter\Router\RouteCollection;
  */
 // $routes->get('/', 'Home::index');
 $routes->get('/', 'Main::index');
+$routes->get('/healthcheck', 'Main::healthcheck');
 $routes->match(['get', 'post'],'/user/add', 'IndependentTables::addUser');
 $routes->match(['get'],'/users', 'IndependentTables::getUsers');
 $routes->match(['get', 'post'],'/monObject/add', 'IndependentTables::addMonObject');

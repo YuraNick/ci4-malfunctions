@@ -17,6 +17,8 @@ class App extends BaseConfig
      * E.g., http://example.com/
      */
     public string $baseURL = 'https://ci4-malfunctions.local/';
+    // public string $baseURL = current_url();
+    // public string $baseURL = $_SERVER['HTTP_HOST'];
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
@@ -200,4 +202,24 @@ class App extends BaseConfig
      * @see http://www.w3.org/TR/CSP/
      */
     public bool $CSPEnabled = false;
+    public function __construct() {
+        parent::__construct();
+
+        $this->setBaseUrl(); // Set the Base URL
+    }
+
+    protected function setBaseUrl() {
+        $baseUrl = getenv('BASE_URL');
+        if ($baseUrl) {
+            $this->baseURL = $baseUrl;
+        }
+        // switch ($_ENV['CI_ENVIRONMENT']) {
+        //     case 'development':
+        //         $this->baseURL = "http://$this->localFolder.loc";
+        //         break;
+        //     default:
+        //         $this->baseURL = "http://testserver.com/$this->localFolder";
+        //         break;
+        // }
+    }
 }

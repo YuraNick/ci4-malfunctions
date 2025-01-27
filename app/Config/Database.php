@@ -197,5 +197,28 @@ class Database extends Config
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }
+
+        $hostname = getenv('DATABASE_HOSTNAME', TRUE);
+        if ($hostname) {
+            $this->default['hostname'] = $hostname;
+            $this->default['username'] = getenv('DATABASE_USERNAME', TRUE);
+            $this->default['password'] = getenv('DATABASE_PASSWORD', TRUE);
+            $this->default['database'] = getenv('DATABASE_DATABASE', TRUE);
+            $this->default['port'] = getenv('DATABASE_PORT', TRUE);
+            $this->default['DBDriver'] = 'Postgre';
+            $this->default['charset'] = 'utf8';
+            $this->default['charset'] = 'utf8';
+        }
+
+        $_ENV['database.default.hostname'] = '';
+        $_ENV['database.default.username'] = '';
+        $_ENV['database.default.password'] = '';
+        $_ENV['database.default.database'] = '';
+        $_ENV['database.default.port'] = '';
+        $_SERVER['database.default.hostname'] = '';
+        $_SERVER['database.default.username'] = '';
+        $_SERVER['database.default.password'] = '';
+        $_SERVER['database.default.database'] = '';
+        $_SERVER['database.default.port'] = '';
     }
 }
