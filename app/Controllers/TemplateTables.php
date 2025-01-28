@@ -73,11 +73,16 @@ class TemplateTables extends BaseController
         ROUND(avg("malfunction"."malfunctions"."reliability"), 2) as avg_reliability,
         ROUND(avg("malfunction"."malfunctions"."percent"), 2) as avg_percent
       ',
+      'dispatcher_status' => 'dispatcher_status,
+        count("malfunction"."malfunctions"."id") as count,
+        ROUND(avg("malfunction"."malfunctions"."reliability"), 2) as avg_reliability,
+        ROUND(avg("malfunction"."malfunctions"."percent"), 2) as avg_percent
+      ',
       default => 'malfunction.malfunctions.id, 
         malfunction.obj_mon.state_number as state_number,
         malfunction.reasons.name as reason,
         malfunction.criticality.name as criticality,
-        begin, end, reliability, percent',
+        begin, end, reliability, percent, dc.id_status, dispatcher_status',
     };
 
     $where = '';
@@ -93,7 +98,14 @@ class TemplateTables extends BaseController
     $build = $model->select($select   
       )->join('malfunction.obj_mon', 'malfunction.obj_mon.id = malfunction.malfunctions.id_obj'
       )->join('malfunction.reasons', 'malfunction.reasons.id = malfunction.malfunctions.id_reason'
-      )->join('malfunction.criticality', 'malfunction.criticality.id = malfunction.malfunctions.id_criticality');
+      )->join('malfunction.criticality', 'malfunction.criticality.id = malfunction.malfunctions.id_criticality'
+      )->join('LATERAL 
+        (SELECT id_malfunction, id_status, ds.status dispatcher_status FROM malfunction.dispatcher_confirms dc
+          JOIN  malfunction.dispatcher_statuses ds ON dc.id_status = ds.id
+          WHERE malfunction.malfunctions.id = dc.id_malfunction ORDER BY dc.id LIMIT 1
+        ) dc', 
+      'malfunction.malfunctions.id = dc.id_malfunction' , 'left'
+      );
     if ($where) {
       $build->where($where);
     }
@@ -102,12 +114,12 @@ class TemplateTables extends BaseController
       ['id' => 'state_number', 'value' => 'объекту мониторинга'],
       ['id' => 'reason', 'value' => 'причине неисправности'],
       ['id' => 'criticality', 'value' => 'критичности'],
+      ['id' => 'dispatcher_status', 'value' => 'статусу диспетчера'],
     ];
 
     if (array_search($group_by, array_column($groupByOptions, 'id')) !== FALSE) {
       $build->groupBy($group_by);
     }
-    // )->where('malfunction.malfunctions.end <', $data['to']  
     $rows = $build->findAll();
 
 
