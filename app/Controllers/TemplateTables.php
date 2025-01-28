@@ -41,6 +41,10 @@ class TemplateTables extends BaseController
     return $html;
   }
 
+  public function getOneMalfunction($id): string {
+    return (string) $id;
+  }
+
   public function getMalfunctions(): string {
     $data = [
       'from' => $this->request->getPost('from'),
@@ -82,7 +86,7 @@ class TemplateTables extends BaseController
         malfunction.obj_mon.state_number as state_number,
         malfunction.reasons.name as reason,
         malfunction.criticality.name as criticality,
-        begin, end, reliability, percent, dc.id_status, dispatcher_status',
+        begin, end, reliability, percent, dispatcher_status',
     };
 
     $where = '';
@@ -102,7 +106,7 @@ class TemplateTables extends BaseController
       )->join('LATERAL 
         (SELECT id_malfunction, id_status, ds.status dispatcher_status FROM malfunction.dispatcher_confirms dc
           JOIN  malfunction.dispatcher_statuses ds ON dc.id_status = ds.id
-          WHERE malfunction.malfunctions.id = dc.id_malfunction ORDER BY dc.id LIMIT 1
+          WHERE malfunction.malfunctions.id = dc.id_malfunction ORDER BY dc.id DESC LIMIT 1
         ) dc', 
       'malfunction.malfunctions.id = dc.id_malfunction' , 'left'
       );
