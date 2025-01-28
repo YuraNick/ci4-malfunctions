@@ -38,6 +38,7 @@
     <li><a class="nav-item" href="/supportDeveloperAnswers">Посмотреть ответы разработчиков техподдержке</a></li>
     <li><hr class="nav-item"></li>
     <li><a class="nav-item" href="/template/malfunctions">Отчет по неисправностям</a></li>
+    <li><a class="nav-item" href="/template/malfunction/get">Карточка неисправности</a></li>
     <li><hr class="nav-item"></li>
     <li><a class="nav-item text-danger" href="/truncate_tables">Очистить таблицы (удалить данные)</a></li>
   </ul>

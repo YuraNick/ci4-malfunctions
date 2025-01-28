@@ -12,7 +12,7 @@ class DispatcherConfirms extends Model
     'id_malfunction', 
     'id_user', 
     'id_status', 
-    'timestamp', 
+    'timestamp',
     'comment', 
   ];
 }

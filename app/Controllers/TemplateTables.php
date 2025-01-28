@@ -8,6 +8,11 @@ use App\Models\User;
 use App\Models\Сriticality;
 use App\Models\Reasons;
 use App\Models\DispatcherStatuses;
+use App\Models\DispatcherConfirms;
+use App\Models\DispatcherSupportQuestions;
+use App\Models\DispatcherSupportAnswers;
+use App\Models\SupportDeveloperQuestions;
+use App\Models\SupportDeveloperAnswers;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class TemplateTables extends BaseController
@@ -41,8 +46,105 @@ class TemplateTables extends BaseController
     return $html;
   }
 
-  public function getOneMalfunction($id): string {
-    return (string) $id;
+  public function getOneMalfunction(): string {
+    $id = $this->request->getGet('id') ?? 0;
+    $malfunctions = new Malfunctions();
+    $malfunctionData = $malfunctions->findAll();
+    $options = array_map(function($malfunctionRow) {
+      return $malfunctionRow['id'];
+    }, $malfunctionData);
+
+    $data = [];
+
+    if ($id) {
+      $data = $this->getMalfunctionCardData($id);
+    }
+
+    $html = view('html_elements/header', ['title' => 'Карточка неисправности']);
+    $html .= view('pages/malfunction_card', ['options' => $options, 'val' => $id, 'data' => $data]);
+    $html .= view('html_elements/footer_data_table');
+    return $html;
+  }
+
+  private function getMalfunctionCardData(int $id) {
+    $malfunctionsModel = new Malfunctions();
+    $malfunction = $malfunctionsModel->select(
+      '*, malfunction.malfunctions.id as id, malfunction.malfunctions.begin, malfunction.malfunctions.end,
+      reliability, percent, obj_mon.state_number, obj_mon.model, reasons.name as reason,
+      criticality.name'
+    )->join('malfunction.obj_mon as obj_mon', 'malfunction.malfunctions.id_obj = obj_mon.id'
+    )->join('malfunction.reasons as reasons', 'malfunction.malfunctions.id_reason = reasons.id'
+    )->join('malfunction.criticality as criticality', 'malfunction.malfunctions.id_criticality = criticality.id'
+    )->where('malfunction.malfunctions.id', $id)->findAll();
+
+    $malfunctionsModel = null;
+
+    $dispatcherConfirmsModel = new DispatcherConfirms();
+    $dispatcherConfirms = $dispatcherConfirmsModel->select(
+      'malfunction.dispatcher_confirms.id, malfunction.dispatcher_confirms.timestamp, malfunction.dispatcher_confirms.comment, 
+      status, comment, login, name, role'
+    ) ->join(
+      'malfunction.users as users', 'users.id = malfunction.dispatcher_confirms.id_user'
+    )->join(
+      'malfunction.dispatcher_statuses as ds', 'ds.id = malfunction.dispatcher_confirms.id_status'
+    )->where('malfunction.dispatcher_confirms.id_malfunction', $id)->findAll();
+    $dispatcherConfirmsModel = null;
+
+    $dispatcherSupportQuestionsModel = new DispatcherSupportQuestions();
+    $dispatcherSupportQuestions = $dispatcherSupportQuestionsModel->select(
+      'malfunction.dispatcher_support_questions.id, malfunction.dispatcher_support_questions.timestamp, malfunction.dispatcher_support_questions.text,
+      importance, login, name, role'
+    )->join(
+      'malfunction.users as users', 'users.id = malfunction.dispatcher_support_questions.id_user'
+    )->where('malfunction.dispatcher_support_questions.id_malfunction', $id)->findAll();
+    $dispatcherSupportQuestionsModel = null;
+
+    $dsqIds = array_map(function($dispatcherSupportQuestionRow) {
+      return $dispatcherSupportQuestionRow['id'];
+    }, $dispatcherSupportQuestions);
+
+
+    $dispatcherSupportAnswersModel = new DispatcherSupportAnswers();
+    $dispatcherSupportAnswers = $dispatcherSupportAnswersModel->select(
+      'dispatcher_support_answers.id, timestamp, lifetime, text, login, name, role'
+    )->join(
+      'malfunction.users as users', 'users.id = malfunction.dispatcher_support_answers.id_user'
+    )->where("malfunction.dispatcher_support_answers.id_question IN (" 
+      . implode(',', $dsqIds) . ")"
+    )->findAll();
+    $dispatcherSupportQuestionsModel = null;
+
+    $supportDeveloperQuestionsModel = new SupportDeveloperQuestions();
+    $supportDeveloperQuestions = $supportDeveloperQuestionsModel->select(
+      'malfunction.support_developer_questions.id, malfunction.support_developer_questions.timestamp, malfunction.support_developer_questions.text,
+      importance, login, name, role'
+    )->join(
+      'malfunction.users as users', 'users.id = malfunction.support_developer_questions.id_user'
+    )->where('malfunction.support_developer_questions.id_malfunction', $id)->findAll();
+    $supportDeveloperQuestionsModel = null;
+
+    $sdqIds = array_map(function($supportDeveloperQuestionRow) {
+      return $supportDeveloperQuestionRow['id'];
+    }, $supportDeveloperQuestions);
+
+    $supportDeveloperAnswersModel = new SupportDeveloperAnswers();
+    $supportDeveloperAnswers = $supportDeveloperAnswersModel->select(
+      'support_developer_answers.id, timestamp, text, login, name, role'
+    )->join(
+      'malfunction.users as users', 'users.id = malfunction.support_developer_answers.id_user'
+    )->where("malfunction.support_developer_answers.id_question IN (" 
+      . implode(',', $sdqIds) . ")"
+    )->findAll();
+    $supportDeveloperAnswersModel = null;
+
+    return [
+      'malfunction' => $malfunction,
+      'dispatcher_confirms' => $dispatcherConfirms,
+      'dispatcher_support_questions' => $dispatcherSupportQuestions,
+      'dispatcher_support_answers' => $dispatcherSupportAnswers,
+      'support_developer_questions' => $supportDeveloperQuestions,
+      'support_developer_answers' => $supportDeveloperAnswers,
+    ];
   }
 
   public function getMalfunctions(): string {
@@ -59,7 +161,6 @@ class TemplateTables extends BaseController
       'timezone_name' => $timezone_name,
       'group_by' => $group_by,
     ] = $data;
-
 
     $select = match($group_by) {
       'state_number' => '"malfunction"."obj_mon"."state_number" as "state_number", 

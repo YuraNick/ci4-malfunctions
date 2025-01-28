@@ -45,4 +45,4 @@ $routes->match(['get'],'/truncate_tables', 'ManageTables::truncate');
 $routes->match(['get'],'/create_tables', 'ManageTables::create');
 
 $routes->match(['get', 'post'],'/template/malfunctions', 'TemplateTables::getMalfunctions');
-$routes->match(['get'],'/template/malfunction/(:num)', 'TemplateTables::getOneMalfunction/$1');
+$routes->match(['get'],'/template/malfunction/get', 'TemplateTables::getOneMalfunction');
