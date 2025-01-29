@@ -6,7 +6,7 @@
     'developer' => 'разработчик',
   ];
 ?>
-<a class="position-fixed top-0 start-0" href="/">на гравную</a>
+<a class="position-fixed top-0 start-0" href="/">на главную</a>
 <h3 class="text-center">Пользователи</h3>
 
 <table class='table table-bordered' id='data-table'>

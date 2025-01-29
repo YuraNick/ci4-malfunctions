@@ -61,7 +61,10 @@ class TemplateTables extends BaseController
     }
 
     $html = view('html_elements/header', ['title' => 'Карточка неисправности']);
-    $html .= view('pages/malfunction_card', ['options' => $options, 'val' => $id, 'data' => $data]);
+    $html .= view('pages/malfunction_card_form', ['options' => $options, 'val' => $id]);
+    if (count($data)) {
+      $html .= view('pages/malfunction_card', ['data' => $data]);
+    }
     $html .= view('html_elements/footer_data_table');
     return $html;
   }
@@ -103,16 +106,19 @@ class TemplateTables extends BaseController
       return $dispatcherSupportQuestionRow['id'];
     }, $dispatcherSupportQuestions);
 
+    $dispatcherSupportAnswers = [];
+    if (count($dsqIds)) {
+      $dispatcherSupportAnswersModel = new DispatcherSupportAnswers();
+      $dispatcherSupportAnswers = $dispatcherSupportAnswersModel->select(
+        'dispatcher_support_answers.id, timestamp, lifetime, text, login, name, role'
+      )->join(
+        'malfunction.users as users', 'users.id = malfunction.dispatcher_support_answers.id_user'
+      )->where("malfunction.dispatcher_support_answers.id_question IN (" 
+        . implode(',', $dsqIds) . ")"
+      )->findAll();
+      $dispatcherSupportQuestionsModel = null;
+    }
 
-    $dispatcherSupportAnswersModel = new DispatcherSupportAnswers();
-    $dispatcherSupportAnswers = $dispatcherSupportAnswersModel->select(
-      'dispatcher_support_answers.id, timestamp, lifetime, text, login, name, role'
-    )->join(
-      'malfunction.users as users', 'users.id = malfunction.dispatcher_support_answers.id_user'
-    )->where("malfunction.dispatcher_support_answers.id_question IN (" 
-      . implode(',', $dsqIds) . ")"
-    )->findAll();
-    $dispatcherSupportQuestionsModel = null;
 
     $supportDeveloperQuestionsModel = new SupportDeveloperQuestions();
     $supportDeveloperQuestions = $supportDeveloperQuestionsModel->select(
@@ -127,15 +133,19 @@ class TemplateTables extends BaseController
       return $supportDeveloperQuestionRow['id'];
     }, $supportDeveloperQuestions);
 
-    $supportDeveloperAnswersModel = new SupportDeveloperAnswers();
-    $supportDeveloperAnswers = $supportDeveloperAnswersModel->select(
-      'support_developer_answers.id, timestamp, text, login, name, role'
-    )->join(
-      'malfunction.users as users', 'users.id = malfunction.support_developer_answers.id_user'
-    )->where("malfunction.support_developer_answers.id_question IN (" 
-      . implode(',', $sdqIds) . ")"
-    )->findAll();
-    $supportDeveloperAnswersModel = null;
+    $supportDeveloperAnswers = [];
+    if (count($sdqIds)) {
+      $supportDeveloperAnswersModel = new SupportDeveloperAnswers();
+      $supportDeveloperAnswers = $supportDeveloperAnswersModel->select(
+        'support_developer_answers.id, timestamp, text, login, name, role'
+      )->join(
+        'malfunction.users as users', 'users.id = malfunction.support_developer_answers.id_user'
+      )->where("malfunction.support_developer_answers.id_question IN (" 
+        . implode(',', $sdqIds) . ")"
+      )->findAll();
+      $supportDeveloperAnswersModel = null;
+    }
+
 
     return [
       'malfunction' => $malfunction,
